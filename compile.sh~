@@ -1,0 +1,3 @@
+#!/bin/bash
+gfortran -Wextra -Wimplicit-interface -fPIC -g -fcheck=all -fbacktrace -ffree-line-length-0 cylinder_system.f08 dranxor2.f95 -o cylinder_system.exe #development
+#gfortran -Wall -Wextra -Wimplicit-interface -fPIC -Werror -O3 -march=native -ffast-math -funroll-loops -ffree-line-length-0 cylinder_system.f08 dranxor2.f95 -o cylinder_system.exe #final

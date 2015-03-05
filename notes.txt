@@ -1,0 +1,8 @@
+when the liquid particles go from +z to -z they may get out of the cylinder, be careful with this
+when measuring and calculating stuff that depends on N is this variable only the free particles or all of them? it's probably just the free ones
+which temperature should be used to calculate Cv? the temporal average of all the simulation as well?
+which values should the speeds of the particles have? SOLVED: boltzman with mean 0 and for the sd look at the project description of FYS4460
+when calculating the pressure and the potential energy by cylinders, should it be counted according to the cylinder in which the particle receiving the interaction (n1) is located at? or should it be only when the interacting couple is in the cylider?
+is the potential energy between two fixed particles relevant?
+is using a module for storing common stuff slower than using common blocks (because it may be an object)?
+don't forget to check that the speeds have a gaussian distribution
