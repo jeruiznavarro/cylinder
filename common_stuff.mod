@@ -1,5 +1,5 @@
 GFORTRAN module version '10' created from cylinder_system.f08
-MD5:ae04b208dbc9309cf56cee265ac52cde -- If you edit this, you'll get what you deserve.
+MD5:e076a699c48ca89fbd32e2f3e5bdb466 -- If you edit this, you'll get what you deserve.
 
 (() () () () () () () () () () () () () () () () () () () () () () () ()
 () () ())
@@ -35,11 +35,11 @@ UNKNOWN EXPLICIT-SAVE 0 0) (LOGICAL 4 0 0 0 LOGICAL ()) 0 0 () () 0 () ()
 8 'cells' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0 DIMENSION) (INTEGER 8 0 0 0 INTEGER ()) 0 0 ()
 (4 0 EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (CONSTANT (
-INTEGER 4 0 0 0 INTEGER ()) 0 '10000') (CONSTANT (INTEGER 4 0 0 0
-INTEGER ()) 0 '1') (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '20') (
-CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (CONSTANT (INTEGER 4 0 0 0
+INTEGER 8 0 0 0 INTEGER ()) 0 '10000') (CONSTANT (INTEGER 4 0 0 0
+INTEGER ()) 0 '1') (CONSTANT (INTEGER 8 0 0 0 INTEGER ()) 0 '20') (
+CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (CONSTANT (INTEGER 8 0 0 0
 INTEGER ()) 0 '20') (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (
-CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '20')) 0 () () () 0 0)
+CONSTANT (INTEGER 8 0 0 0 INTEGER ()) 0 '20')) 0 () () () 0 0)
 9 'cellsize' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0 DIMENSION) (REAL 8 0 0 0 REAL ()) 0 0 () (1 0
 EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (CONSTANT (
@@ -56,11 +56,11 @@ UNKNOWN EXPLICIT-SAVE 0 0) (INTEGER 8 0 0 0 INTEGER ()) 0 0 () () 0 () ()
 13 'cvcountcy' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT
 UNKNOWN-PROC UNKNOWN EXPLICIT-SAVE 0 0 DIMENSION) (INTEGER 8 0 0 0
 INTEGER ()) 0 0 () (1 0 EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ())
-0 '1') (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '10')) 0 () () () 0 0)
+0 '1') (CONSTANT (INTEGER 8 0 0 0 INTEGER ()) 0 '10')) 0 () () () 0 0)
 14 'cvcy' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0 DIMENSION) (REAL 8 0 0 0 REAL ()) 0 0 () (1 0
 EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (CONSTANT (
-INTEGER 4 0 0 0 INTEGER ()) 0 '10')) 0 () () () 0 0)
+INTEGER 8 0 0 0 INTEGER ()) 0 '10')) 0 () () () 0 0)
 15 'cylinders' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT
 UNKNOWN-PROC UNKNOWN EXPLICIT-SAVE 0 0) (LOGICAL 4 0 0 0 LOGICAL ()) 0 0
 () () 0 () () () 0 0)
@@ -79,7 +79,7 @@ UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 20 'ekinecy' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0 DIMENSION) (REAL 8 0 0 0 REAL ()) 0 0 () (1 0
 EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (CONSTANT (
-INTEGER 4 0 0 0 INTEGER ()) 0 '10')) 0 () () () 0 0)
+INTEGER 8 0 0 0 INTEGER ()) 0 '10')) 0 () () () 0 0)
 21 'energy_from_si' 'common_stuff' '' 1 ((PROCEDURE UNKNOWN-INTENT
 MODULE-PROC DECL UNKNOWN 0 0 FUNCTION IMPLICIT_PURE) (REAL 8 0 0 0 REAL
 ()) 22 0 (23) () 21 () () () 0 0)
@@ -98,134 +98,164 @@ UNKNOWN EXPLICIT-SAVE 0 0) (LOGICAL 4 0 0 0 LOGICAL ()) 0 0 () () 0 () ()
 30 'fixed' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0 DIMENSION) (LOGICAL 4 0 0 0 LOGICAL ()) 0 0 ()
 (1 0 EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (CONSTANT (
-INTEGER 4 0 0 0 INTEGER ()) 0 '10000')) 0 () () () 0 0)
-31 'gnuplot' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+INTEGER 8 0 0 0 INTEGER ()) 0 '10000')) 0 () () () 0 0)
+31 'fvec' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+UNKNOWN EXPLICIT-SAVE 0 0 DIMENSION) (REAL 8 0 0 0 REAL ()) 0 0 () (2 0
+EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (CONSTANT (
+INTEGER 4 0 0 0 INTEGER ()) 0 '3') (CONSTANT (INTEGER 4 0 0 0 INTEGER ())
+0 '1') (CONSTANT (INTEGER 8 0 0 0 INTEGER ()) 0 '10000')) 0 () () () 0 0)
+32 'gnuplot' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (LOGICAL 4 0 0 0 LOGICAL ()) 0 0 () () 0 () ()
 () 0 0)
-32 'intrad' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+33 'intrad' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 0)
-33 'kboltz' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+34 'kboltz' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 0)
-34 'latcon' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+35 'latcon' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 0)
-35 'length_from_si' 'common_stuff' '' 1 ((PROCEDURE UNKNOWN-INTENT
+36 'length_from_si' 'common_stuff' '' 1 ((PROCEDURE UNKNOWN-INTENT
 MODULE-PROC DECL UNKNOWN 0 0 FUNCTION IMPLICIT_PURE) (REAL 8 0 0 0 REAL
-()) 36 0 (37) () 35 () () () 0 0)
-38 'length_to_si' 'common_stuff' '' 1 ((PROCEDURE UNKNOWN-INTENT
+()) 37 0 (38) () 36 () () () 0 0)
+39 'length_to_si' 'common_stuff' '' 1 ((PROCEDURE UNKNOWN-INTENT
 MODULE-PROC DECL UNKNOWN 0 0 FUNCTION IMPLICIT_PURE) (REAL 8 0 0 0 REAL
-()) 39 0 (40) () 38 () () () 0 0)
-41 'mass' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+()) 40 0 (41) () 39 () () () 0 0)
+42 'mass' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 0)
-42 'mass_from_si' 'common_stuff' '' 1 ((PROCEDURE UNKNOWN-INTENT
+43 'mass_from_si' 'common_stuff' '' 1 ((PROCEDURE UNKNOWN-INTENT
 MODULE-PROC DECL UNKNOWN 0 0 FUNCTION IMPLICIT_PURE) (REAL 8 0 0 0 REAL
-()) 43 0 (44) () 42 () () () 0 0)
-45 'mass_to_si' 'common_stuff' '' 1 ((PROCEDURE UNKNOWN-INTENT
+()) 44 0 (45) () 43 () () () 0 0)
+46 'mass_to_si' 'common_stuff' '' 1 ((PROCEDURE UNKNOWN-INTENT
 MODULE-PROC DECL UNKNOWN 0 0 FUNCTION IMPLICIT_PURE) (REAL 8 0 0 0 REAL
-()) 46 0 (47) () 45 () () () 0 0)
-48 'meascylin' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT
+()) 47 0 (48) () 46 () () () 0 0)
+49 'maxcells' 'common_stuff' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN IMPLICIT-SAVE 0 0) (INTEGER 8 0 0 0 INTEGER ()) 0 0
+() (CONSTANT (INTEGER 8 0 0 0 INTEGER ()) 0 '20') () 0 () () () 0 0)
+50 'maxcyl' 'common_stuff' '' 1 ((PARAMETER UNKNOWN-INTENT UNKNOWN-PROC
+UNKNOWN IMPLICIT-SAVE 0 0) (INTEGER 8 0 0 0 INTEGER ()) 0 0 () (
+CONSTANT (INTEGER 8 0 0 0 INTEGER ()) 0 '10') () 0 () () () 0 0)
+51 'maxpartic' 'common_stuff' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN IMPLICIT-SAVE 0 0) (INTEGER 8 0 0 0 INTEGER ()) 0 0
+() (CONSTANT (INTEGER 8 0 0 0 INTEGER ()) 0 '10000') () 0 () () () 0 0)
+52 'meascylin' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT
 UNKNOWN-PROC UNKNOWN EXPLICIT-SAVE 0 0) (INTEGER 8 0 0 0 INTEGER ()) 0 0
 () () 0 () () () 0 0)
-49 'measintv' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+53 'measintv' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 0)
-50 'numcells' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+54 'mvec' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+UNKNOWN EXPLICIT-SAVE 0 0 DIMENSION) (REAL 8 0 0 0 REAL ()) 0 0 () (1 0
+EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (CONSTANT (
+INTEGER 8 0 0 0 INTEGER ()) 0 '10000')) 0 () () () 0 0)
+55 'numcells' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0 DIMENSION) (INTEGER 8 0 0 0 INTEGER ()) 0 0 ()
 (1 0 EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (CONSTANT (
 INTEGER 4 0 0 0 INTEGER ()) 0 '3')) 0 () () () 0 0)
-51 'occup' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+56 'occup' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0 DIMENSION) (INTEGER 8 0 0 0 INTEGER ()) 0 0 ()
 (3 0 EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (CONSTANT (
-INTEGER 4 0 0 0 INTEGER ()) 0 '20') (CONSTANT (INTEGER 4 0 0 0 INTEGER ())
-0 '1') (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '20') (CONSTANT (
-INTEGER 4 0 0 0 INTEGER ()) 0 '1') (CONSTANT (INTEGER 4 0 0 0 INTEGER ())
+INTEGER 8 0 0 0 INTEGER ()) 0 '20') (CONSTANT (INTEGER 4 0 0 0 INTEGER ())
+0 '1') (CONSTANT (INTEGER 8 0 0 0 INTEGER ()) 0 '20') (CONSTANT (
+INTEGER 4 0 0 0 INTEGER ()) 0 '1') (CONSTANT (INTEGER 8 0 0 0 INTEGER ())
 0 '20')) 0 () () () 0 0)
-52 'press' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+57 'press' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 0)
-53 'presscount' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT
+58 'presscount' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT
 UNKNOWN-PROC UNKNOWN EXPLICIT-SAVE 0 0) (INTEGER 8 0 0 0 INTEGER ()) 0 0
 () () 0 () () () 0 0)
-54 'r' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+59 'radius' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
+0)
+60 'rvec' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0 DIMENSION) (REAL 8 0 0 0 REAL ()) 0 0 () (2 0
 EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (CONSTANT (
-INTEGER 4 0 0 0 INTEGER ()) 0 '10') (CONSTANT (INTEGER 4 0 0 0 INTEGER ())
-0 '1') (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '10000')) 0 () () () 0 0)
-55 'radius' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
-UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
-0)
-56 'sigm' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
-UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
-0)
-57 'simpcub' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+INTEGER 4 0 0 0 INTEGER ()) 0 '3') (CONSTANT (INTEGER 4 0 0 0 INTEGER ())
+0 '1') (CONSTANT (INTEGER 8 0 0 0 INTEGER ()) 0 '10000')) 0 () () () 0 0)
+61 'samemass' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (LOGICAL 4 0 0 0 LOGICAL ()) 0 0 () () 0 () ()
 () 0 0)
-58 'siz' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+62 'sigm' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
+0)
+63 'simpcub' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+UNKNOWN EXPLICIT-SAVE 0 0) (LOGICAL 4 0 0 0 LOGICAL ()) 0 0 () () 0 () ()
+() 0 0)
+64 'siz' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0 DIMENSION) (REAL 8 0 0 0 REAL ()) 0 0 () (1 0
 EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (CONSTANT (
 INTEGER 4 0 0 0 INTEGER ()) 0 '3')) 0 () () () 0 0)
-59 'sumekine' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
-UNKNOWN EXPLICIT-SAVE 0 0 DIMENSION) (REAL 8 0 0 0 REAL ()) 0 0 () (1 0
-EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (CONSTANT (
-INTEGER 4 0 0 0 INTEGER ()) 0 '2')) 0 () () () 0 0)
-60 'sumekinecy' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT
+65 'sumekine' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
+0)
+66 'sumekinecy' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT
 UNKNOWN-PROC UNKNOWN EXPLICIT-SAVE 0 0 DIMENSION) (REAL 8 0 0 0 REAL ())
-0 0 () (2 0 EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (
-CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '2') (CONSTANT (INTEGER 4 0 0 0
-INTEGER ()) 0 '1') (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '10')) 0 ()
-() () 0 0)
-61 'temp' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+0 0 () (1 0 EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (
+CONSTANT (INTEGER 8 0 0 0 INTEGER ()) 0 '10')) 0 () () () 0 0)
+67 'sumekinecysqur' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN EXPLICIT-SAVE 0 0 DIMENSION) (REAL 8 0 0 0 REAL ())
+0 0 () (1 0 EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (
+CONSTANT (INTEGER 8 0 0 0 INTEGER ()) 0 '10')) 0 () () () 0 0)
+68 'sumekinesqur' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () ()
+0 () () () 0 0)
+69 'temp' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 0)
-62 'tempbath' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+70 'tempbath' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 0)
-63 'tempcy' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+71 'tempcy' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0 DIMENSION) (REAL 8 0 0 0 REAL ()) 0 0 () (1 0
 EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (CONSTANT (
-INTEGER 4 0 0 0 INTEGER ()) 0 '10')) 0 () () () 0 0)
-64 'time' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+INTEGER 8 0 0 0 INTEGER ()) 0 '10')) 0 () () () 0 0)
+72 'time' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 0)
-65 'time_from_si' 'common_stuff' '' 1 ((PROCEDURE UNKNOWN-INTENT
+73 'time_from_si' 'common_stuff' '' 1 ((PROCEDURE UNKNOWN-INTENT
 MODULE-PROC DECL UNKNOWN 0 0 FUNCTION IMPLICIT_PURE) (REAL 8 0 0 0 REAL
-()) 66 0 (67) () 65 () () () 0 0)
-68 'time_to_si' 'common_stuff' '' 1 ((PROCEDURE UNKNOWN-INTENT
+()) 74 0 (75) () 73 () () () 0 0)
+76 'time_to_si' 'common_stuff' '' 1 ((PROCEDURE UNKNOWN-INTENT
 MODULE-PROC DECL UNKNOWN 0 0 FUNCTION IMPLICIT_PURE) (REAL 8 0 0 0 REAL
-()) 69 0 (70) () 68 () () () 0 0)
-71 'tmax' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+()) 77 0 (78) () 76 () () () 0 0)
+79 'tmax' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 0)
-72 'tmeas' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+80 'tmeas' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 0)
-73 'trelax' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+81 'trelax' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 0)
-74 'tstep' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+82 'tstep' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 0)
-75 'volum' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+83 'volum' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 0)
+84 'vvec' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+UNKNOWN EXPLICIT-SAVE 0 0 DIMENSION) (REAL 8 0 0 0 REAL ()) 0 0 () (2 0
+EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (CONSTANT (
+INTEGER 4 0 0 0 INTEGER ()) 0 '3') (CONSTANT (INTEGER 4 0 0 0 INTEGER ())
+0 '1') (CONSTANT (INTEGER 8 0 0 0 INTEGER ()) 0 '10000')) 0 () () () 0 0)
 23 'x' '' '' 22 ((VARIABLE IN UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (
 REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0 0)
 26 'x' '' '' 25 ((VARIABLE IN UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (
 REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0 0)
-37 'x' '' '' 36 ((VARIABLE IN UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (
+38 'x' '' '' 37 ((VARIABLE IN UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (
 REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0 0)
-40 'x' '' '' 39 ((VARIABLE IN UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (
+41 'x' '' '' 40 ((VARIABLE IN UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (
 REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0 0)
-44 'x' '' '' 43 ((VARIABLE IN UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (
+45 'x' '' '' 44 ((VARIABLE IN UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (
 REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0 0)
-47 'x' '' '' 46 ((VARIABLE IN UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (
+48 'x' '' '' 47 ((VARIABLE IN UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (
 REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0 0)
-67 'x' '' '' 66 ((VARIABLE IN UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (
+75 'x' '' '' 74 ((VARIABLE IN UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (
 REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0 0)
-70 'x' '' '' 69 ((VARIABLE IN UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (
+78 'x' '' '' 77 ((VARIABLE IN UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (
 REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0 0)
 )
 
@@ -234,11 +264,13 @@ REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0 0)
 0 10 'cv' 0 11 'cvcount' 0 12 'cvcountcy' 0 13 'cvcy' 0 14 'cylinders' 0
 15 'dens' 0 16 'diffconst' 0 17 'difftag' 0 18 'ekine' 0 19 'ekinecy' 0
 20 'energy_from_si' 0 21 'energy_to_si' 0 24 'epot' 0 27 'epsi' 0 28 'fcc'
-0 29 'fixed' 0 30 'gnuplot' 0 31 'intrad' 0 32 'kboltz' 0 33 'latcon' 0
-34 'length_from_si' 0 35 'length_to_si' 0 38 'mass' 0 41 'mass_from_si'
-0 42 'mass_to_si' 0 45 'meascylin' 0 48 'measintv' 0 49 'numcells' 0 50
-'occup' 0 51 'press' 0 52 'presscount' 0 53 'r' 0 54 'radius' 0 55 'sigm'
-0 56 'simpcub' 0 57 'siz' 0 58 'sumekine' 0 59 'sumekinecy' 0 60 'temp'
-0 61 'tempbath' 0 62 'tempcy' 0 63 'time' 0 64 'time_from_si' 0 65
-'time_to_si' 0 68 'tmax' 0 71 'tmeas' 0 72 'trelax' 0 73 'tstep' 0 74
-'volum' 0 75)
+0 29 'fixed' 0 30 'fvec' 0 31 'gnuplot' 0 32 'intrad' 0 33 'kboltz' 0 34
+'latcon' 0 35 'length_from_si' 0 36 'length_to_si' 0 39 'mass' 0 42
+'mass_from_si' 0 43 'mass_to_si' 0 46 'maxcells' 0 49 'maxcyl' 0 50
+'maxpartic' 0 51 'meascylin' 0 52 'measintv' 0 53 'mvec' 0 54 'numcells'
+0 55 'occup' 0 56 'press' 0 57 'presscount' 0 58 'radius' 0 59 'rvec' 0
+60 'samemass' 0 61 'sigm' 0 62 'simpcub' 0 63 'siz' 0 64 'sumekine' 0 65
+'sumekinecy' 0 66 'sumekinecysqur' 0 67 'sumekinesqur' 0 68 'temp' 0 69
+'tempbath' 0 70 'tempcy' 0 71 'time' 0 72 'time_from_si' 0 73 'time_to_si'
+0 76 'tmax' 0 79 'tmeas' 0 80 'trelax' 0 81 'tstep' 0 82 'volum' 0 83
+'vvec' 0 84)
