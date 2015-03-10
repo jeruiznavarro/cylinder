@@ -6,7 +6,7 @@ which temperature should be used to calculate Cv? the temporal average of all th
 which values should the speeds of the particles have? SOLVED: mean 0 and for the sd look at the project description of FYS4460, don't forget to check that the speeds have a gaussian distribution
 when calculating the pressure and the potential energy by cylinders, should it be counted according to the cylinder in which the particle receiving the interaction (n1) is located at? or should it be only when the interacting couple is in the cylider?
 is the potential energy between two fixed particles relevant?
-should the pressure be measured over a certain amount of steps so we can average over them?
+should the pressure be measured over a certain amount of steps so we can average over them? is the interval between the rest of measurements a good candidate for that amount of steps?
 
 #####COMPUTATIONAL QUESTIONS#####
 
@@ -18,4 +18,4 @@ how to get ifort?
 #####THINGS TO DO#####
 
 don't forget to finish implementing something to read masses from a file in case they are different or just generating them according to where they are in the lattice
-be careful when you change units, check the 
+be careful when you change units, check the numerical values in the code, for example the shift of the potential energy
