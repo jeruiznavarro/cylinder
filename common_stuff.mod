@@ -1,5 +1,5 @@
 GFORTRAN module version '10' created from cylinder_system.f08
-MD5:3e2c3a978d20bcd5df8a964d474f80d5 -- If you edit this, you'll get what you deserve.
+MD5:4877dbc1108d99440c440f9671ef54ff -- If you edit this, you'll get what you deserve.
 
 (() () () () () () () () () () () () () () () () () () () () () () () ()
 () () ())
@@ -170,65 +170,70 @@ UNKNOWN EXPLICIT-SAVE 0 0 DIMENSION) (REAL 8 0 0 0 REAL ()) 0 0 () (2 0
 EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (CONSTANT (
 INTEGER 4 0 0 0 INTEGER ()) 0 '3') (CONSTANT (INTEGER 4 0 0 0 INTEGER ())
 0 '1') (CONSTANT (INTEGER 8 0 0 0 INTEGER ()) 0 '10000')) 0 () () () 0 0)
-47 'samemass' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+47 'rvecini' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+UNKNOWN EXPLICIT-SAVE 0 0 DIMENSION) (REAL 8 0 0 0 REAL ()) 0 0 () (2 0
+EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (CONSTANT (
+INTEGER 4 0 0 0 INTEGER ()) 0 '3') (CONSTANT (INTEGER 4 0 0 0 INTEGER ())
+0 '1') (CONSTANT (INTEGER 8 0 0 0 INTEGER ()) 0 '10000')) 0 () () () 0 0)
+48 'samemass' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (LOGICAL 4 0 0 0 LOGICAL ()) 0 0 () () 0 () ()
 () 0 0)
-48 'sigm' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+49 'sigm' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 0)
-49 'simpcub' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+50 'simpcub' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (LOGICAL 4 0 0 0 LOGICAL ()) 0 0 () () 0 () ()
 () 0 0)
-50 'siz' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+51 'siz' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0 DIMENSION) (REAL 8 0 0 0 REAL ()) 0 0 () (1 0
 EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (CONSTANT (
 INTEGER 4 0 0 0 INTEGER ()) 0 '3')) 0 () () () 0 0)
-51 'sumekine' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+52 'sumekine' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 0)
-52 'sumekinecy' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT
+53 'sumekinecy' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT
 UNKNOWN-PROC UNKNOWN EXPLICIT-SAVE 0 0 DIMENSION) (REAL 8 0 0 0 REAL ())
 0 0 () (1 0 EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (
 CONSTANT (INTEGER 8 0 0 0 INTEGER ()) 0 '10')) 0 () () () 0 0)
-53 'sumekinecysqur' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT
+54 'sumekinecysqur' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT
 UNKNOWN-PROC UNKNOWN EXPLICIT-SAVE 0 0 DIMENSION) (REAL 8 0 0 0 REAL ())
 0 0 () (1 0 EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (
 CONSTANT (INTEGER 8 0 0 0 INTEGER ()) 0 '10')) 0 () () () 0 0)
-54 'sumekinesqur' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT
+55 'sumekinesqur' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT
 UNKNOWN-PROC UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () ()
 0 () () () 0 0)
-55 'temp' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+56 'temp' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 0)
-56 'tempbath' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+57 'tempbath' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 0)
-57 'tempcy' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+58 'tempcy' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0 DIMENSION) (REAL 8 0 0 0 REAL ()) 0 0 () (1 0
 EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (CONSTANT (
 INTEGER 8 0 0 0 INTEGER ()) 0 '10')) 0 () () () 0 0)
-58 'threshold' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT
+59 'threshold' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT
 UNKNOWN-PROC UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () ()
 0 () () () 0 0)
-59 'time' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+60 'time' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 0)
-60 'tmax' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+61 'tmax' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 0)
-61 'tmeas' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+62 'tmeas' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 0)
-62 'trelax' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+63 'trelax' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 0)
-63 'tstep' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+64 'tstep' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 0)
-64 'volum' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+65 'volum' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0
 0)
-65 'vvec' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+66 'vvec' 'common_stuff' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN EXPLICIT-SAVE 0 0 DIMENSION) (REAL 8 0 0 0 REAL ()) 0 0 () (2 0
 EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') (CONSTANT (
 INTEGER 4 0 0 0 INTEGER ()) 0 '3') (CONSTANT (INTEGER 4 0 0 0 INTEGER ())
@@ -244,7 +249,8 @@ INTEGER 4 0 0 0 INTEGER ()) 0 '3') (CONSTANT (INTEGER 4 0 0 0 INTEGER ())
 'mass' 0 32 'maxbin' 0 33 'maxcells' 0 34 'maxcyl' 0 35 'maxpartic' 0 36
 'meascylin' 0 37 'measintv' 0 38 'mvec' 0 39 'numcells' 0 40 'occup' 0
 41 'press' 0 42 'presscount' 0 43 'radcount' 0 44 'radius' 0 45 'rvec' 0
-46 'samemass' 0 47 'sigm' 0 48 'simpcub' 0 49 'siz' 0 50 'sumekine' 0 51
-'sumekinecy' 0 52 'sumekinecysqur' 0 53 'sumekinesqur' 0 54 'temp' 0 55
-'tempbath' 0 56 'tempcy' 0 57 'threshold' 0 58 'time' 0 59 'tmax' 0 60
-'tmeas' 0 61 'trelax' 0 62 'tstep' 0 63 'volum' 0 64 'vvec' 0 65)
+46 'rvecini' 0 47 'samemass' 0 48 'sigm' 0 49 'simpcub' 0 50 'siz' 0 51
+'sumekine' 0 52 'sumekinecy' 0 53 'sumekinecysqur' 0 54 'sumekinesqur' 0
+55 'temp' 0 56 'tempbath' 0 57 'tempcy' 0 58 'threshold' 0 59 'time' 0
+60 'tmax' 0 61 'tmeas' 0 62 'trelax' 0 63 'tstep' 0 64 'volum' 0 65 'vvec'
+0 66)

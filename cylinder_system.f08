@@ -41,11 +41,13 @@ module common_stuff
 	real(8)::l2=0.d0!this is the L factor of the interval for the distance bins
 	real(8)::latcon=0.d0!lattice constant
 	real(8)::mass=0.d0!generic mass of the particles
+	real(8)::meansqrdispl=0.d0!mean square displacement used to calculate the diffusion constant
 	real(8)::mvec(maxpartic)=0.d0!if the masses of the particles are not the same they can be stored here
 	real(8)::measintv=0.d0!interval of time between measurements
 	real(8)::press=0.d0!pressure of the system
-	real(8)::rvec(3,maxpartic)=0.d0!positions for each particle (x->(1,:), y->(2,:), z->(3,:)) are here
 	real(8)::radius=0.d0!radius of the non solid zone of the system where particles can flow
+	real(8)::rvec(3,maxpartic)=0.d0!positions for each particle (x->(1,:), y->(2,:), z->(3,:)) are here
+	real(8)::rvecini(3,maxpartic)=0.d0!initial positions for each particle (x->(1,:), y->(2,:), z->(3,:)) are here
 	real(8)::sigm=0.d0!size parameter of the Lennard-Jones interaction
 	real(8)::siz(3)=0.d0!dimensions (x=1, y=2, z=3) of the simulation box
 	real(8)::sumekine=0.d0!the sum of the kinetic energy over time is kept here
@@ -159,13 +161,12 @@ subroutine startup()!the system to be simulated is set up here
 	integer(8)::j=1!particle counter
 	integer(8)::k=0!dimension counter
 	integer(8)::seed(8)=0!seed for the random number generator
-	real(8)::dist=0.d0
 	real(8)::dran_g!gaussian random number
-	real(8)::dran_u!uniform random number
 	call date_and_time(values=seed)!creating a seed using the clock of the computer
 	call dran_ini(0)!seed(8))!initializing the random number generator
 	open(20,file='position_output.dat',action='write')
 	open(30,file='energy_temperature_pressure_output.dat',action='write')
+	open(40,file='diffusion.dat',action='write')
 	radius=2.5d-1*dmin1(siz(1),siz(2))!radius based on the size of the system
 	!radius=2.d1*2.d0**(1.d0/6.d0)*sigm!radius based on 20 equlibrium distances
 	volum=siz(1)*siz(2)*siz(3)!volume of the system
@@ -215,6 +216,18 @@ subroutine startup()!the system to be simulated is set up here
 					rvec(1,j+3)=latcon*(5.d-1+dble(i1))!x position for the fourth particle of the crystalline cell
 					rvec(2,j+3)=latcon*dble(i2)!y position for the fourth particle of the crystalline cell
 					rvec(3,j+3)=latcon*(5.d-1+dble(i3))!z position for the fourth particle of the crystalline cell
+					rvecini(1,j)=rvec(1,j)!storing the initial x position of the first particle
+					rvecini(2,j)=rvec(2,j)!storing the initial y position of the first particle
+					rvecini(3,j)=rvec(3,j)!storing the initial z position of the first particle
+					rvecini(1,j+1)=rvec(1,j+1)!storing the initial x position of the second particle
+					rvecini(2,j+1)=rvec(2,j+1)!storing the initial y position of the second particle
+					rvecini(3,j+1)=rvec(3,j+1)!storing the initial z position of the second particle
+					rvecini(1,j+2)=rvec(1,j+2)!storing the initial x position of the third particle
+					rvecini(2,j+2)=rvec(2,j+2)!storing the initial y position of the third particle
+					rvecini(3,j+2)=rvec(3,j+2)!storing the initial z position of the third particle
+					rvecini(1,j+3)=rvec(1,j+3)!storing the initial x position of the fourth particle
+					rvecini(2,j+3)=rvec(2,j+3)!storing the initial y position of the fourth particle
+					rvecini(3,j+3)=rvec(3,j+3)!storing the initial z position of the fourth particle
 					if(gnuplot)then
 						write(*,*) rvec(1,j),rvec(2,j),rvec(3,j)!data feed to gnuplot
 						write(*,*) rvec(1,j+1),rvec(2,j+1),rvec(3,j+1)!data feed to gnuplot
@@ -244,9 +257,9 @@ subroutine startup()!the system to be simulated is set up here
 			end do
 		end do
 	end do
-1	if(gnuplot)write(*,*) 'e'!end of gnuplot frame
+	if(gnuplot)write(*,*) 'e'!end of gnuplot frame
 	if(simpcub)then
-		amnttot=j!total amount of particles for the sc structure
+		amnttot=j-1!total amount of particles for the sc structure
 	else if(fcc)then
 		amnttot=j-1!total amount of particles for the fcc structure
 		amntfree=amnttot!just in case to avoid problems since there are no fixed particles in this case
@@ -258,16 +271,16 @@ subroutine startup()!the system to be simulated is set up here
 	if(simpcub)then
 		dens=amntfree/(siz(3)*dacos(-1.d0)*radius**2)!this is the number density of the free particles
 	else if(fcc)then
-		dens=amnttot/(siz(3)*dacos(-1.d0)*radius**2)!this is the number density of the particles
+		dens=amnttot/(siz(3)*dacos(-1.d0)*radius**2)!this is the number density of all the particles
 	end if
 	call create_cell_lists()!cells are needed to calculate forces
-	call calculate_forces()!before the first integration iteration the forces need to be calculated
+	call calculate_forces()!before the first integration iteration can be carried out, the forces need to be calculated
 	return
 end subroutine startup
 
 
 
-subroutine remove_average_momentum()!to avoid the system having a drift, the average momentum must be substracted to all the particles in the system, it works even if the particles have different masses
+subroutine remove_average_momentum()!to avoid the system having a drift, the average momentum must be substracted to all the particles in the system
 	use common_stuff
 	implicit none
 	integer(8)::i=0!particle counter
@@ -276,7 +289,7 @@ subroutine remove_average_momentum()!to avoid the system having a drift, the ave
 	if(samemass)then
 		do i=1,amnttot
 			do j=1,3
-				mmntsum(j)=mmntsum(j)+vvec(j,i)*mass!calculating the global momentum
+				mmntsum(j)=mmntsum(j)+vvec(j,i)*mass!calculating the global momentum if the particles have all the same mass
 			end do
 		end do
 		mmntsum=mmntsum/dble(amnttot)!dividing by the number of particles so that the final result is the average momentum of the system
@@ -288,7 +301,7 @@ subroutine remove_average_momentum()!to avoid the system having a drift, the ave
 	else
 		do i=1,amnttot
 			do j=1,3
-				mmntsum(j)=mmntsum(j)+vvec(j,i)*mvec(i)!calculating the global momentum
+				mmntsum(j)=mmntsum(j)+vvec(j,i)*mvec(i)!calculating the global momentum if the mass of each particle is different
 			end do
 		end do
 		mmntsum=mmntsum/dble(amnttot)!dividing by the number of particles so that the final result is the average momentum of the system
@@ -357,40 +370,43 @@ subroutine half_leap(thermostat)!the verlet integrator requires to update the ve
 				do n=1,occup(i,j,k)
 					tag=cells(n,i,j,k)!this value is going to be called from memory many times so it will be kept here for convenience
 					if(fixed(tag))cycle!fixed particles don't move
-					if(samemass)then
-						if(dran_u()<threshold)then
-							andersenpart=.true.!this particle will suffer a collision in this case
-						else
-							andersenpart=.false.!and in this case there is no collision
-						end if
-						do m=1,3
-							if(berendsen.and.andersen)then
-								stop "Both thermostats can't be active at the the same time, aborting."
-							else if(berendsen.and.thermostat)then
-								vvec(m,tag)=dsqrt(1.d0+(tempbath/temp-1.d0)*tstep/trelax)*(vvec(m,tag)+fvec(m,tag)*tstep*5.d-1/mass)!updating speeds with the berendsen thermostat
-							else if((andersen.and.thermostat).and.andersenpart)then
-								vvec(m,tag)=dsqrt(kboltz*tempbath/mass)*dran_g()!updating speeds with the andersen thermostat
-							else
-								vvec(m,tag)=vvec(m,tag)+fvec(m,tag)*tstep*5.d-1/mass!updating speeds without a thermostat
-							end if
-						end do
+					if((andersen.and.thermostat).and.(dran_u()<threshold))then
+						andersenpart=.true.!this particle will suffer a collision in this case
 					else
-						if(dran_u()<threshold)then
-							andersenpart=.true.!this particle will suffer a collision in this case
+						andersenpart=.false.!and in this case there is no collision
+					end if
+					if(samemass)then
+						if(berendsen.and.andersen)then
+							stop "Both thermostats can't be active at the the same time, aborting."
+						else if(berendsen.and.thermostat)then
+							do m=1,3
+								vvec(m,tag)=dsqrt(1.d0+(tempbath/temp-1.d0)*tstep/trelax)*(vvec(m,tag)+fvec(m,tag)*tstep*5.d-1/mass)!updating speeds with the berendsen thermostat
+							end do
+						else if((andersen.and.thermostat).and.andersenpart)then
+							do m=1,3
+								vvec(m,tag)=dsqrt(kboltz*tempbath/mass)*dran_g()!updating speeds with the andersen thermostat
+							end do
 						else
-							andersenpart=.false.!and in this case there is no collision
+							do m=1,3
+								vvec(m,tag)=vvec(m,tag)+fvec(m,tag)*tstep*5.d-1/mass!updating speeds without a thermostat
+							end do
 						end if
-						do m=1,3
-							if(berendsen.and.andersen)then
-								stop "Both thermostats can't be active at the the same time, aborting."
-							else if(berendsen.and.thermostat)then
+					else
+						if(berendsen.and.andersen)then
+							stop "Both thermostats can't be active at the the same time, aborting."
+						else if(berendsen.and.thermostat)then
+							do m=1,3
 								vvec(m,tag)=dsqrt(1.d0+(tempbath/temp-1.d0)*tstep/trelax)*(vvec(m,tag)+fvec(m,tag)*tstep*5.d-1/mvec(tag))!updating speeds with the berendsen thermostat
-							else if((andersen.and.thermostat).and.andersenpart)then
+							end do
+						else if((andersen.and.thermostat).and.andersenpart)then
+							do m=1,3
 								vvec(m,tag)=dsqrt(kboltz*tempbath/mvec(tag))*dran_g()!updating speeds with the andersen thermostat
-							else
+							end do
+						else
+							do m=1,3
 								vvec(m,tag)=vvec(m,tag)+fvec(m,tag)*tstep*5.d-1/mvec(tag)!updating speeds without a thermostat
-							end if
-						end do
+							end do
+						end if
 					end if
 				end do
 			end do
@@ -672,7 +688,8 @@ subroutine measuring()!here the different measurements are performed
 	use common_stuff
 	implicit none
 	integer(8)::i=0!particle counter
-	ekine=0.d0
+	ekine=0.d0!setting the kinetic energy to zero to calculate the new values
+	meansqrdispl=0.d0!same for the mean square displacement
 	if(samemass)then
 		do i=1,amnttot
 			if(.not.fixed(i))ekine=ekine+vvec(1,i)**2+vvec(2,i)**2+vvec(3,i)**2!measuring the kinetic energy if all the particles have the same mass
@@ -689,21 +706,14 @@ subroutine measuring()!here the different measurements are performed
 	cvcount=cvcount+1!another measurement for the heat capacity
 	temp=(2.d0*ekine)/(3.d0*amntfree*kboltz)!and with the kinetic energy the temperature is measured too
 	press=dens*temp*kboltz+press/(3.d0*volum*dble(presscount))!final result for the pressure
-	write(30,*) time, epot+ekine, epot, ekine, temp, press!writing data
-	press=0.d0
-	call diffusion()
+	write(30,*) time,epot+ekine,epot,ekine,temp,press!writing data
+	press=0.d0!discarding the old value of the pressure so the new one can be computed in the next steps
+	do i=1,amnttot
+		meansqrdispl=meansqrdispl+dsqrt((rvec(1,i)-revecini(1,i))**2+(rvec(2,i)-revecini(2,i))**2+(rvec(3,i)-revecini(3,i))**2)
+	end do
+	write(40,*) time,meansqrdispl/(6.d0*amnttot)!writing diffusion data
 	return
 end subroutine measuring
-
-
-
-subroutine diffusion()
-	use common_stuff
-	implicit none
-	real(8)::dran_u!uniform random number
-	
-	return
-end subroutine diffusion
 
 
 
@@ -712,7 +722,9 @@ subroutine measuring_with_cylinders()!here the different measurements are perfor
 	implicit none
 	integer(8)::i=0!particle counter
 	integer(8)::j=0!cylinder counter
-	ekinecy=0.d0
+	do j=1,maxcyl
+		ekinecy(j)=0.d0!setting the kinetic energy of the cylinders to zero to calculate the new values
+	end do
 	if(samemass)then
 		do i=1,amnttot
 			if(.not.fixed(i))then
@@ -768,7 +780,6 @@ subroutine radial_distribution()
 	use common_stuff
 	implicit none
 	logical::firststep=.true.!after the first call to this subroutine is completed, this will be false
-	logical::target=.true.!once a particle is chosen to be te reference, this will be false
 	integer(8)::bintag=0!tag of the current bin
 	integer(8)::i=0!particle counter
 	integer(8)::tag=0!tag for the first particle
@@ -805,14 +816,15 @@ subroutine output()!after the simulation, some more stuff needs to be computed a
 	if(cylinders)then
 		do i=1,maxcyl
 			cvcy(i)=(3.d0*kboltz)/((4.d0*amntfree*(sumekinecy(i)**2/dble(cvcountcy(i))-sumekinecysqur(i))/(dble(cvcountcy(i))*3.d0*kboltz*tempcy(i)**2))-2.d0)!computing the final value of the heat 				capacity
-			write(30,*) '# The heat capacity is: ',cvcy(1),cvcy(2),cvcy(3),cvcy(4),cvcy(5),cvcy(6),cvcy(7),cvcy(8),cvcy(9),cvcy(10)!writing data
+			write(30,*) '# The heat capacity in cylinder',i,'is:',cvcy(i)!writing data
 		end do
 	else
 		cv=(3.d0*kboltz)/((4.d0*amntfree*(sumekine**2/dble(cvcount)-sumekinesqur)/(dble(cvcount)*3.d0*kboltz*temp**2))-2.d0)!computing the final value of the heat capacity
-		write(30,*) '# The heat capacity is: ',cv!writing data
+		write(30,*) '# The heat capacity is:',cv!writing data
 	end if
 	close(20)
 	close(30)
+	close(40)
 	return
 end subroutine output
 
@@ -822,18 +834,18 @@ subroutine save_state()!if the current state is to be preserved it can be saved 
 	use common_stuff
 	implicit none
 	integer(8)::i=0!particle counter
-	open(40,file='saved_state.dat',action='write')
-	write(40,*) amnttot
+	open(50,file='saved_state.dat',action='write')
+	write(50,*) amnttot
 	if(samemass)then
 		do i=1,amnttot
-			write(40,*) rvec(1,i),rvec(2,i),rvec(3,i),vvec(1,i),vvec(2,i),vvec(3,i),fvec(1,i),fvec(2,i),fvec(3,i)!reading positions, velocities and forces when the masses are all equal
+			write(50,*) rvec(1,i),rvec(2,i),rvec(3,i),vvec(1,i),vvec(2,i),vvec(3,i),fvec(1,i),fvec(2,i),fvec(3,i)!reading positions, velocities and forces when the masses are all equal
 		end do
 	else
 		do i=1,amnttot
-			write(40,*) rvec(1,i),rvec(2,i),rvec(3,i),vvec(1,i),vvec(2,i),vvec(3,i),fvec(1,i),fvec(2,i),fvec(3,i),mvec(i)!reading positions, velocities and forces when the masses are different
+			write(50,*) rvec(1,i),rvec(2,i),rvec(3,i),vvec(1,i),vvec(2,i),vvec(3,i),fvec(1,i),fvec(2,i),fvec(3,i),mvec(i)!reading positions, velocities and forces when the masses are different
 		end do
 	end if
-	close(40)
+	close(50)
 	return
 end subroutine save_state
 
@@ -843,17 +855,17 @@ subroutine load_state()!and to retrieve a saved state this is the subroutine nee
 	use common_stuff
 	implicit none
 	integer(8)::i=0!particle counter
-	open(40,file='saved_state.dat',action='read')
-	read(40,*) amnttot
+	open(50,file='saved_state.dat',action='read')
+	read(50,*) amnttot
 	if(samemass)then
 		do i=1,amnttot
-			read(40,*) rvec(1,i),rvec(2,i),rvec(3,i),vvec(1,i),vvec(2,i),vvec(3,i),fvec(1,i),fvec(2,i),fvec(3,i)
+			read(50,*) rvec(1,i),rvec(2,i),rvec(3,i),vvec(1,i),vvec(2,i),vvec(3,i),fvec(1,i),fvec(2,i),fvec(3,i)
 		end do
 	else
 		do i=1,amnttot
-			read(40,*) rvec(1,i),rvec(2,i),rvec(3,i),vvec(1,i),vvec(2,i),vvec(3,i),fvec(1,i),fvec(2,i),fvec(3,i),mvec(i)
+			read(50,*) rvec(1,i),rvec(2,i),rvec(3,i),vvec(1,i),vvec(2,i),vvec(3,i),fvec(1,i),fvec(2,i),fvec(3,i),mvec(i)
 		end do
 	end if
-	close(40)
+	close(50)
 	return
 end subroutine load_state

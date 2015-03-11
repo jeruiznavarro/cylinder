@@ -13,7 +13,6 @@ is the density of the free particles the only interesting one?
 
 is using a module for storing common stuff slower than using common blocks (because it may be an object)?
 are internal subroutines better than external ones?
-is using slices better than writing loops running through the indeces? IT PROBABLY IS, BUT ASK ANYWAY, SPECIALLY IN THE CASE THAT THE CODE IS PARALLELIZED
 how to get ifort?
 
 #####THINGS TO DO#####
