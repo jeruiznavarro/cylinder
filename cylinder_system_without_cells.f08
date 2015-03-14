@@ -269,7 +269,6 @@ subroutine startup()!the system to be simulated is set up here
 		dens=amnttot/(siz(3)*dacos(-1.d0)*radius**2)!this is the number density of all the particles
 	end if
 	call remove_average_momentum()!the system should't have a global net movement so it is removed here if there's any
-	call create_cell_lists()!cells are needed to calculate the forces
 	call calculate_forces()!before the first integration iteration can be carried out, the forces need to be calculated
 	return
 contains
@@ -305,24 +304,6 @@ contains
 		end if
 		return
 	end subroutine remove_average_momentum
-	subroutine create_cell_lists()!cell lists are used to speed up the simulation, see the article in wikipedia for more general details
-		implicit none
-		integer(8)::i=0!dimension counter
-		integer(8)::indeces(3)=0!indeces of the cell in which a particle is
-		integer(8)::j=0!particle counter
-		do i=1,3
-			numcells(i)=floor(siz(i)/intrad,8)!computing how many cells each dimension has
-			cellsize(i)=siz(i)/dble(numcells(i))!calculating how big the cells are
-		end do
-		do j=1,amnttot
-			do i=1,3
-				indeces(i)=floor(rvec(i,j)/cellsize(i),8)+1!particle j is the cell which has these indeces
-			end do
-			occup(indeces(1),indeces(2),indeces(3))=occup(indeces(1),indeces(2),indeces(3))+1!updating the occupancy list with the new particle
-			cells(occup(indeces(1),indeces(2),indeces(3)),indeces(1),indeces(2),indeces(3))=j!adding the new particle to the apropiate cell
-		end do
-		return
-	end subroutine create_cell_lists!			#####BE CAREFUL, IF THE SIMULATION BOX IS NOT COMPLETELY ON THE NON NEGATIVE PARTS OF THE AXES SEGMENTATION FAULTS MAY APPEAR
 end subroutine startup
 
 
@@ -330,15 +311,11 @@ end subroutine startup
 subroutine kinematics_and_dynamics()!this is the integrator of the simulation, in this case the Verlet integrator
 	use common_stuff
 	implicit none
-	integer(8)::i=0!x dimension cell counter
-	integer(8)::j=0!y dimension cell counter
-	integer(8)::k=0!z dimension cell counter
-	integer(8)::m=0!dimension counter
-	integer(8)::n=0!particle counter in the cell lists
-	integer(8)::tag=0!particle tag
+	integer(8)::i=0!first particle counter
+	integer(8)::j=0!second particle counter
+	integer(8)::k=0!dimension counter
 	call half_leap(.false.)!updating the velocities of the particles without the thermostat, because it should only be applied to the speeds one per timestep
 	call move()!updating the positions of the particles
-	call update_particles_in_cells()!after the particles have moved, they may have entered a different cell and this needs to be checked and taken care of
 	call calculate_forces()!the Verlet integrator requires to update the speeds again after moving the particle so the forces need to be calculated again
 	call half_leap(.true.)!updating the velocities of the particles with the thermostat
 	return
@@ -349,115 +326,71 @@ contains
 		logical::andersenpart=.false.!if true, the particle will collide according to the thermostat rules
 		real(8)::dran_g!gaussian random number
 		real(8)::dran_u!uniform random number
-		do k=1,numcells(3)
-			do j=1,numcells(2)
-				do i=1,numcells(1)
-					do n=1,occup(i,j,k)
-						tag=cells(n,i,j,k)!this value is going to be called from memory many times so it will be kept here for convenience
-						if(fixed(tag))cycle!fixed particles don't move
-						if((andersen.and.thermostat).and.(dran_u()<threshold))then
-							andersenpart=.true.!this particle will suffer a collision in this case
-						else
-							andersenpart=.false.!and in this case there is no collision
-						end if
-						if(samemass)then
-							if(berendsen.and.andersen)then
-								stop "Both thermostats can't be active at the the same time, aborting."
-							else if(berendsen.and.thermostat)then
-								do m=1,3
-									vvec(m,tag)=dsqrt(1.d0+(tempbath/temp-1.d0)*tstep/trelax)*(vvec(m,tag)+fvec(m,tag)*tstep*5.d-1/mass)!updating speeds with the berendsen thermostat
-								end do
-							else if((andersen.and.thermostat).and.andersenpart)then
-								do m=1,3
-									vvec(m,tag)=dsqrt(kboltz*tempbath/mass)*dran_g()!updating speeds with the andersen thermostat
-								end do
-							else
-								do m=1,3
-									vvec(m,tag)=vvec(m,tag)+fvec(m,tag)*tstep*5.d-1/mass!updating speeds without a thermostat
-								end do
-							end if
-						else
-							if(berendsen.and.andersen)then
-								stop "Both thermostats can't be active at the the same time, aborting."
-							else if(berendsen.and.thermostat)then
-								do m=1,3
-									vvec(m,tag)=dsqrt(1.d0+(tempbath/temp-1.d0)*tstep/trelax)*(vvec(m,tag)+fvec(m,tag)*tstep*5.d-1/mvec(tag))!updating speeds with the berendsen thermostat
-								end do
-							else if((andersen.and.thermostat).and.andersenpart)then
-								do m=1,3
-									vvec(m,tag)=dsqrt(kboltz*tempbath/mvec(tag))*dran_g()!updating speeds with the andersen thermostat
-								end do
-							else
-								do m=1,3
-									vvec(m,tag)=vvec(m,tag)+fvec(m,tag)*tstep*5.d-1/mvec(tag)!updating speeds without a thermostat
-								end do
-							end if
-						end if
-					end do
+		do i=1,amnttot
+			if(fixed(i))cycle!fixed particles don't move
+			if((andersen.and.thermostat).and.(dran_u()<threshold))then
+				andersenpart=.true.!this particle will suffer a collision in this case
+			else
+				andersenpart=.false.!and in this case there is no collision
+			end if
+			if(samemass)then
+				if(berendsen.and.andersen)then
+					stop "Both thermostats can't be active at the the same time, aborting."
+			else if(berendsen.and.thermostat)then
+				do m=1,3
+					vvec(m,i)=dsqrt(1.d0+(tempbath/temp-1.d0)*tstep/trelax)*(vvec(m,i)+fvec(m,i)*tstep*5.d-1/mass)!updating speeds with the berendsen thermostat
 				end do
-			end do
+			else if((andersen.and.thermostat).and.andersenpart)then
+				do m=1,3
+					vvec(m,i)=dsqrt(kboltz*tempbath/mass)*dran_g()!updating speeds with the andersen thermostat
+				end do
+				else
+					do m=1,3
+						vvec(m,i)=vvec(m,i)+fvec(m,i)*tstep*5.d-1/mass!updating speeds without a thermostat
+					end do
+				end if
+			else
+				if(berendsen.and.andersen)then
+					stop "Both thermostats can't be active at the the same time, aborting."
+				else if(berendsen.and.thermostat)then
+					do m=1,3
+						vvec(m,i)=dsqrt(1.d0+(tempbath/temp-1.d0)*tstep/trelax)*(vvec(m,i)+fvec(m,i)*tstep*5.d-1/mvec(i))!updating speeds with the berendsen thermostat
+					end do
+				else if((andersen.and.thermostat).and.andersenpart)then
+					do m=1,3
+						vvec(m,i)=dsqrt(kboltz*tempbath/mvec(i))*dran_g()!updating speeds with the andersen thermostat
+					end do
+				else
+					do m=1,3
+						vvec(m,i)=vvec(m,i)+fvec(m,i)*tstep*5.d-1/mvec(i)!updating speeds without a thermostat
+					end do
+				end if
+			end if
 		end do
 		return
 	end subroutine half_leap
 	subroutine move()!this is where the actual movement of the particles takes place
 		implicit none
 		if(gnuplot)write(*,*) "splot '-' w p pt 7 lc 0"!new gnuplot frame
-		do k=1,numcells(3)
-			do j=1,numcells(2)
-				do i=1,numcells(1)
-					do n=1,occup(i,j,k)
-						tag=cells(n,i,j,k)!this value is going to be called from memory many times so it will be kept here for convenience
-						if(fixed(tag))cycle!fixed particles don't move
-						do m=1,3
-							rvec(m,tag)=rvec(m,tag)+vvec(m,tag)*tstep!moving the particle
-						end do
-						do m=1,3
-							if(rvec(m,tag)<0.d0)then
-								rvec(m,tag)=rvec(m,tag)+siz(m)!if the particle has reached the lower end of one dimension of the simulation box it should be at the other side of it
-								rvecnonper(m,tag)=rvecnonper(m,tag)-siz(m)!tracking the movement along the periodic boundary conditions
-							else if(rvec(m,tag)>=siz(m))then
-								rvec(m,tag)=rvec(m,tag)-siz(m)!if the particle has reached the higher end of one dimension of the simulation box it should be at the other side of it
-								rvecnonper(m,tag)=rvecnonper(m,tag)+siz(m)!tracking the movement along the periodic boundary conditions
-							end if
-						end do
-						if(gnuplot)write(*,*) rvec(1,tag),rvec(2,tag),rvec(3,tag)!data feed to gnuplot
-					end do
-				end do
+		do i=1,numcells(1)
+			if(fixed(i))cycle!fixed particles don't move
+			do m=1,3
+				rvec(m,i)=rvec(m,i)+vvec(m,i)*tstep!moving the particle
 			end do
+			do m=1,3
+				if(rvec(m,i)<0.d0)then
+					rvec(m,i)=rvec(m,i)+siz(m)!if the particle has reached the lower end of one dimension of the simulation box it should be at the other side of it
+					rvecnonper(m,i)=rvecnonper(m,i)-siz(m)!tracking the movement along the periodic boundary conditions
+				else if(rvec(m,i)>=siz(m))then
+					rvec(m,i)=rvec(m,i)-siz(m)!if the particle has reached the higher end of one dimension of the simulation box it should be at the other side of it
+					rvecnonper(m,i)=rvecnonper(m,i)+siz(m)!tracking the movement along the periodic boundary conditions
+				end if
+			end do
+			if(gnuplot)write(*,*) rvec(1,i),rvec(2,i),rvec(3,i)!data feed to gnuplot
 		end do
 		if(gnuplot)write(*,*) 'e'!end of gnuplot frame
 		return
 	end subroutine move
-	subroutine update_particles_in_cells()!the particles may be in a different cell after moving, so the lists need to be updated
-		implicit none
-		integer(8)::inew=0!x dimension, new-cell counter
-		integer(8)::jnew=0!y dimension, new-cell counter
-		integer(8)::knew=0!z dimension, new-cell counter
-		do k=1,numcells(3)
-			do j=1,numcells(2)
-				do i=1,numcells(1)
-					n=1!starting particle counter at the beginning of the current list
-					do
-						tag=cells(n,i,j,k)!this value is going to be called from memory many times so it will be kept here for convenience
-						if(fixed(tag))cycle!fixed particles don't need updating
-						inew=floor(rvec(1,tag)/cellsize(1),8)+1!computing the x index of the cell in which the particle is located after moving
-						jnew=floor(rvec(2,tag)/cellsize(2),8)+1!computing the y index of the cell in which the particle is located after moving
-						knew=floor(rvec(3,tag)/cellsize(3),8)+1!computing the z index of the cell in which the particle is located after moving
-						if((i/=inew).or.(j/=jnew).or.(k/=knew))then!after the particle has moved, the cell in which it is contained may have changed so it needs to be updated
-							occup(inew,jnew,knew)=occup(inew,jnew,knew)+1!updating the new occupancy list with the particle
-							cells(occup(inew,jnew,knew),inew,jnew,knew)=tag!adding the particle to the corresponding new cell
-							cells(n,i,j,k)=cells(occup(i,j,k),i,j,k)!taking away the updated particle from the old cell, its place is occupied by the last one in that cell
-							cells(occup(i,j,k),i,j,k)=0!erasing old information
-							occup(i,j,k)=occup(i,j,k)-1!updating the old occupancy list
-						end if
-						n=n+1!next particle
-						if(n>occup(i,j,k))exit
-					end do
-				end do
-			end do
-		end do
-		return
-	end subroutine update_particles_in_cells
 end subroutine kinematics_and_dynamics
 
 
@@ -466,23 +399,10 @@ end subroutine kinematics_and_dynamics
 subroutine calculate_forces()
 	use common_stuff
 	implicit none
-	logical::interaction(maxpartic,maxpartic)=.false.!this matrix stores which interactions have been calculated already
 	logical::measure=.false.!if it is time to make a measurement this variable will be true
-	integer(8)::i1=0!x dimension cell counter for the first particle
-	integer(8)::i2=0!x dimension cell counter for the second particle
-	integer(8)::i3=0!x dimension auxiliary cell counter
-	integer(8)::j1=0!y dimension cell counter for the first particle
-	integer(8)::j2=0!y dimension cell counter for the second particle
-	integer(8)::j3=0!y dimension auxiliary cell counter
-	integer(8)::k1=0!z dimension cell counter for the first particle
-	integer(8)::k2=0!z dimension cell counter for the second particle
-	integer(8)::k3=0!z dimension auxiliary cell counter
-	integer(8)::l=0!dimension counter
-	integer(8)::n1=0!particle counter in the cells, for the first one
-	integer(8)::n2=0!particle counter in the cells, for the second one
-	integer(8)::tag1=0!tag for the first particle
-	integer(8)::tag2=0!tag for the second particle
-	real(8)::displ(3)=0.d0!displacement vector to calculate the appropiate distance with the periodic boundary conditions
+	integer(8)::i=0!first particle counter
+	integer(8)::j=0!second particle counter
+	integer(8)::k=0!dimension counter
 	real(8)::dist=0.d0!distance between particles
 	real(8)::distvec(3)=0.d0!vectorial distance between particles
 	real(8)::force=0.d0!modulus of the force vector
@@ -493,91 +413,52 @@ subroutine calculate_forces()
 	else
 		measure=.false.!to make sure it stays false when it should
 	end if
-	do n1=1,amnttot
-		do n2=1,3
-			fvec(n2,n1)=0.d0!setting forces to zero
-		end do
-		do n2=1,amnttot
-			interaction(n2,n1)=.false.!the interactions must be reset so they can be taken into account again in the new iteration
+	do j=1,amnttot
+		do k=1,3
+			fvec(k,j)=0.d0!setting forces to zero
 		end do
 	end do
-	do k1=1,numcells(3)
-		do j1=1,numcells(2)
-			do i1=1,numcells(1)
-				do n1=1,occup(i1,j1,k1)
-				tag1=cells(n1,i1,j1,k1)!this value is going to be called from memory many times so it will be kept here for convenience
-					do k3=k1-1,k1+1
-						call periodic_interaction(3,k3,k2)!checking for interactions beyond the periodic boundary conditions in the z dimension
-						do j3=j1-1,j1+1
-							call periodic_interaction(2,j3,j2)!checking for interactions beyond the periodic boundary conditions in the y dimension
-							do i3=i1-1,i1+1
-								call periodic_interaction(1,i3,i2)!checking for interactions beyond the periodic boundary conditions in the x dimension
-								do n2=1,occup(i2,j2,k2)
-									tag2=cells(n2,i2,j2,k2)!this value is going to be called from memory many times so it will be kept here for convenience
-									if((tag1==tag2).or.(interaction(tag1,tag2)).or.(interaction(tag2,tag1)))cycle!a particle shouldn't interact with itself or more than needed with any other one
-									call interacting()!if none of the previous conflicts happen, the interaction is computed
-								end do
-							end do
-						end do
-					end do
-				end do
+	do i=1,amnttot
+		do j=i+1,amnttot
+			if(i==j)cycle!a particle shouldn't interact with itself
+			do k=1,3
+				distvec(k)=rvec(k,i)-rvec(k,j)!these are the components of the vectorial distance between the particles
+				if(disvec(k)>=cellsize(k)*5.d-1)then
+					distvec(k)=rvec(k,i)-rvec(k,j)-cellsize(k)!if the particles are too far apart this is the actual component of the distance because of the periodic boundary conditions
+				else if(disvec(k)>=-cellsize(k)*5.d-1)then
+					distvec(k)=rvec(k,i)-rvec(k,j)+cellsize(k)!if the particles are too far apart this is the actual component of the distance because of the periodic boundary conditions
+				end if
 			end do
+			dist=dsqrt(distvec(1)**2+distvec(2)**2+distvec(3)**2)!and this is the distance between the two particles
+			if(fixed(j).or.fixed(i))then!the interaction can be slightly different between fixed and free particles
+				force=2.4d1*epsi*(sigm/dist)**6*(2.d0*(sigm/dist)**6-1.d0)/dist**2!this is the module of the force between a free and a fixed particle
+			else
+				force=2.4d1*epsi*(sigm/dist)**6*(2.d0*(sigm/dist)**6-1.d0)/dist**2!and this is the module of the force between two free particles
+			end if
+			if((.not.fixed(i)).and.(.not.fixed(j)))then
+				do k=1,3
+					fvec(k,i)=fvec(k,i)+distvec(k)*force!and these are the components of the force vector for the first particle
+					fvec(k,j)=fvec(k,j)-distvec(k)*force!the same for the second particle
+				end do
+			else if(fixed(j).and.(.not.fixed(i)))then
+				do l=1,3
+					fvec(k,i)=fvec(k,i)+distvec(k)*force!and these are the components of the force vector for the first particle
+				end do
+			else if(fixed(i).and.(.not.fixed(j)))then
+				do l=1,3
+					fvec(k,j)=fvec(k,j)-distvec(k)*force!and these are the components of the force vector for the first particle
+				end do
+			end if
+			if(measure.and.cylinders)then
+				!#####HERE MAYBE THERE SHOULD BE A CONTRIBUTION TO THE POTENTIAL ENERGY FOR PARTICLES LOCATED EXCLUSIVELY IN EACH CYLINDER
+			else if(measure)then
+				epot=epot+4.d0*epsi*(sigm/dist)**6*((sigm/dist)**6-1.d0)+potentialshift!this is the potential energy
+			end if
+			press=press-force*dist!to calculate the pressure, the sum over all interactions must be carried out
 		end do
 	end do
 	presscount=presscount+1!this counter keeps track of how many timesteps are used to sample the pressure
 	return
-contains
-	subroutine periodic_interaction(dimen,inindex,outindex)!in the case that some cell is beyond the limits, this will apply the periodic boundary conditions to the interaction between the particles
-		implicit none
-		integer(4),intent(in)::dimen!dimension in which the subroutine is carried out, 1 is x-axis, 2 is y-axis and 3 is z-axis, the kind is 4 to avoid problems when it's called with a constant integer
-		integer(8),intent(in)::inindex!this number runs through the range of possible values for neighbouring cells
-		integer(8),intent(out)::outindex!and this is the resulting index of that cell
-		if(inindex==0)then
-			displ(dimen)=-siz(dimen)!if the neighbouring cell is at the end of the simulation box in the x direction the displacement vector has this value
-			outindex=numcells(dimen)!and this is the actual index of that cell
-		else if(inindex==numcells(dimen)+1)then
-			displ(dimen)=siz(dimen)!if the neighbouring cell is at the beginning of the simulation box in the x direction the displacement vector has this value
-			outindex=1!and this is the actual index of that cell
-		else
-			displ(dimen)=0.d0!if the case is not one the former, the displacement vector is null
-			outindex=inindex!and the actual index of the cell doesn't change
-		end if
-		return
-	end subroutine periodic_interaction
-	subroutine interacting()!this is where the actual interaction happens
-		implicit none
-		interaction(tag1,tag2)=.true.!accounting for this interaction
-		do l=1,3
-			distvec(l)=rvec(l,tag1)-rvec(l,tag2)-displ(l)!these are the components of the vectorial distance between the particles
-		end do
-		dist=dsqrt(distvec(1)**2+distvec(2)**2+distvec(3)**2)!and this is the distance between the two particles
-		if(fixed(tag2).or.fixed(tag1))then!the interaction can be slightly different between fixed and free particles
-			force=2.4d1*epsi*(sigm/dist)**6*(2.d0*(sigm/dist)**6-1.d0)/dist**2!this is the module of the force between a free and a fixed particle
-		else
-			force=2.4d1*epsi*(sigm/dist)**6*(2.d0*(sigm/dist)**6-1.d0)/dist**2!and this is the module of the force between two free particles
-		end if
-		if((.not.fixed(tag1)).and.(.not.fixed(tag2)))then
-			do l=1,3
-				fvec(l,tag1)=fvec(l,tag1)+distvec(l)*force!and these are the components of the force vector for the first particle
-					fvec(l,tag2)=fvec(l,tag2)-distvec(l)*force!the same for the second particle
-			end do
-		else if(fixed(tag2).and.(.not.fixed(tag1)))then
-			do l=1,3
-				fvec(l,tag1)=fvec(l,tag1)+distvec(l)*force!and these are the components of the force vector for the first particle
-			end do
-		else if(fixed(tag1).and.(.not.fixed(tag2)))then
-			do l=1,3
-				fvec(l,tag2)=fvec(l,tag2)-distvec(l)*force!and these are the components of the force vector for the first particle
-			end do
-		end if
-		if(measure.and.cylinders)then
-			!#####HERE MAYBE THERE SHOULD BE A CONTRIBUTION TO THE POTENTIAL ENERGY FOR PARTICLES LOCATED EXCLUSIVELY IN EACH CYLINDER
-		else if(measure)then
-			epot=epot+4.d0*epsi*(sigm/dist)**6*((sigm/dist)**6-1.d0)+potentialshift!this is the potential energy
-		end if
-		press=press-force*dist!to calculate the pressure, the sum over all interactions must be carried out
-		return
-	end subroutine interacting
 end subroutine calculate_forces
 
 

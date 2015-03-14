@@ -86,6 +86,7 @@ program MD_3D_cylinders
 			end if
 		end if
 		time=time+tstep!time advances
+		if((.not.gnuplot).and.(mod(nint(time,8),nint(tmax,8)/100)==0))write(*,*) time*1.d2/tmax,'% completed.'!showing work in progress
 	end do
 	call output()!finishing up the writing of results
 contains
@@ -166,9 +167,9 @@ subroutine startup()!the system to be simulated is set up here
 	real(8)::dran_g!gaussian random number
 	call date_and_time(values=seed)!creating a seed using the clock of the computer
 	call dran_ini(0)!seed(8))!initializing the random number generator
-	open(20,file='position_output.dat',action='write')
-	open(30,file='energy_temperature_pressure_diffusion_output.dat',action='write')
-	open(40,file='radial_distribution.dat',action='write')
+	open(20,file='position_output.dat',action='write')!if the positions are to be visualized later they must be saved to this file
+	open(30,file='energy_temperature_pressure_diffusion_output.dat',action='write')!this is where the time evolution of these magnitudes will be kept
+	open(40,file='radial_distribution.dat',action='write')!and the radial distribution function values are here
 	radius=2.5d-1*dmin1(siz(1),siz(2))!radius based on the size of the system
 	!radius=2.d1*2.d0**(1.d0/6.d0)*sigm!radius based on 20 equlibrium distances
 	volum=siz(1)*siz(2)*siz(3)!volume of the system
@@ -211,10 +212,10 @@ subroutine startup()!the system to be simulated is set up here
 						rvecini(k,j+1)=rvec(k,j+1)!storing the initial x position of the second particle
 						rvecini(k,j+2)=rvec(k,j+2)!storing the initial x position of the third particle
 						rvecini(k,j+3)=rvec(k,j+3)!storing the initial x position of the fourth particle
-						vvec(k,j)=dsqrt(kboltz*temp/mass)*dran_g()!velocity of the first particle
-						vvec(k,j+1)=dsqrt(kboltz*temp/mass)*dran_g()!velocity of the second particle
-						vvec(k,j+2)=dsqrt(kboltz*temp/mass)*dran_g()!velocity of the third particle
-						vvec(k,j+3)=dsqrt(kboltz*temp/mass)*dran_g()!velocity of the fourth particle
+						vvec(k,j)=dsqrt(kboltz*temp/mass)*(dran_u()-5.d-1)!dran_g()!velocity of the first particle
+						vvec(k,j+1)=dsqrt(kboltz*temp/mass)*(dran_u()-5.d-1)!dran_g()!velocity of the second particle
+						vvec(k,j+2)=dsqrt(kboltz*temp/mass)*(dran_u()-5.d-1)!dran_g()!velocity of the third particle
+						vvec(k,j+3)=dsqrt(kboltz*temp/mass)*(dran_u()-5.d-1)!dran_g()!velocity of the fourth particle
 					end do
 					if(.not.samemass)then
 						mvec(j)=mass!setting the mass of the first particle
@@ -262,14 +263,14 @@ subroutine startup()!the system to be simulated is set up here
 	end if
 	write(20,*) amnttot!the xyz format needs to have the amount of particles in the first line
 	write(20,*) 'This is an optional comment, but it must be here for the file to be readable by the visualizing program.'!and this comment is mandatory
-	write(30,*) '#	time	total energy	potential energy	kinetic energy	temperature	pressure'!magnitudes in this file
+	write(30,*) '#	time	total energy	potential energy	kinetic energy	temperature	pressure	mean square displacement/6'!magnitudes in this file
 	if(simpcub)then
 		dens=amntfree/(siz(3)*dacos(-1.d0)*radius**2)!this is the number density of the free particles
 	else if(fcc)then
 		dens=amnttot/(siz(3)*dacos(-1.d0)*radius**2)!this is the number density of all the particles
 	end if
 	call remove_average_momentum()!the system should't have a global net movement so it is removed here if there's any
-	call create_cell_lists()!cells are needed to calculate forces
+	call create_cell_lists()!cells are needed to calculate the forces
 	call calculate_forces()!before the first integration iteration can be carried out, the forces need to be calculated
 	return
 contains
@@ -338,7 +339,7 @@ subroutine kinematics_and_dynamics()!this is the integrator of the simulation, i
 	integer(8)::tag=0!particle tag
 	call half_leap(.false.)!updating the velocities of the particles without the thermostat, because it should only be applied to the speeds one per timestep
 	call move()!updating the positions of the particles
-	call update_particle_in_cells()!after the particles have moved, they may have entered a different cell and this needs to be checked and taken care of
+	call update_particles_in_cells()!after the particles have moved, they may have entered a different cell and this needs to be checked and taken care of
 	call calculate_forces()!the Verlet integrator requires to update the speeds again after moving the particle so the forces need to be calculated again
 	call half_leap(.true.)!updating the velocities of the particles with the thermostat
 	return
@@ -354,7 +355,7 @@ contains
 				do i=1,numcells(1)
 					do n=1,occup(i,j,k)
 						tag=cells(n,i,j,k)!this value is going to be called from memory many times so it will be kept here for convenience
-							if(fixed(tag))cycle!fixed particles don't move
+						if(fixed(tag))cycle!fixed particles don't move
 						if((andersen.and.thermostat).and.(dran_u()<threshold))then
 							andersenpart=.true.!this particle will suffer a collision in this case
 						else
@@ -428,7 +429,7 @@ contains
 		if(gnuplot)write(*,*) 'e'!end of gnuplot frame
 		return
 	end subroutine move
-	subroutine update_particle_in_cells()
+	subroutine update_particles_in_cells()!the particles may be in a different cell after moving, so the lists need to be updated
 		implicit none
 		integer(8)::inew=0!x dimension, new-cell counter
 		integer(8)::jnew=0!y dimension, new-cell counter
@@ -457,7 +458,7 @@ contains
 			end do
 		end do
 		return
-	end subroutine update_particle_in_cells
+	end subroutine update_particles_in_cells
 end subroutine kinematics_and_dynamics
 
 
@@ -490,6 +491,8 @@ subroutine calculate_forces()
 		measure=.true.!to avoid computing the above many times, this logical variable is set
 		epot=0.d0!setting the potential energy to zero so it can be calculated
 		presscount=0!setting the counter to zero for the next measurement of the presure
+	else
+		measure=.false.!to make sure it stays false when it should
 	end if
 	do n1=1,amnttot
 		do n2=1,3
@@ -505,15 +508,15 @@ subroutine calculate_forces()
 				do n1=1,occup(i1,j1,k1)
 				tag1=cells(n1,i1,j1,k1)!this value is going to be called from memory many times so it will be kept here for convenience
 					do k3=k1-1,k1+1
-						call periodic_interaction(3,k3,k2)!checking for interactions beyond the periodic boundary conditions
+						call periodic_interaction(3,k3,k2)!checking for interactions beyond the periodic boundary conditions in the z dimension
 						do j3=j1-1,j1+1
-							call periodic_interaction(2,j3,j2)!checking for interactions beyond the periodic boundary conditions
+							call periodic_interaction(2,j3,j2)!checking for interactions beyond the periodic boundary conditions in the y dimension
 							do i3=i1-1,i1+1
-								call periodic_interaction(1,i3,i2)!checking for interactions beyond the periodic boundary conditions
+								call periodic_interaction(1,i3,i2)!checking for interactions beyond the periodic boundary conditions in the x dimension
 								do n2=1,occup(i2,j2,k2)
 									tag2=cells(n2,i2,j2,k2)!this value is going to be called from memory many times so it will be kept here for convenience
-									if((tag1==tag2).or.(interaction(tag1,tag2)).or.(interaction(tag2,tag1)))cycle!a particle shouldn't interact with itself or more than once
-									call interacting()
+									if((tag1==tag2).or.(interaction(tag1,tag2)).or.(interaction(tag2,tag1)))cycle!a particle shouldn't interact with itself or more than needed with any other one
+									call interacting()!if none of the previous conflicts happen, the interaction is computed
 								end do
 							end do
 						end do
@@ -522,7 +525,7 @@ subroutine calculate_forces()
 			end do
 		end do
 	end do
-	presscount=presscount+1!this counter keeps track of how many times the forces are sampled to calculate the pressure
+	presscount=presscount+1!this counter keeps track of how many timesteps are used to sample the pressure
 	return
 contains
 	subroutine periodic_interaction(dimen,inindex,outindex)!in the case that some cell is beyond the limits, this will apply the periodic boundary conditions to the interaction between the particles
@@ -557,7 +560,7 @@ contains
 		if((.not.fixed(tag1)).and.(.not.fixed(tag2)))then
 			do l=1,3
 				fvec(l,tag1)=fvec(l,tag1)+distvec(l)*force!and these are the components of the force vector for the first particle
-					fvec(l,tag2)=fvec(l,tag2)-distvec(l)*force!the same for the second particle
+				fvec(l,tag2)=fvec(l,tag2)-distvec(l)*force!the same for the second particle
 			end do
 		else if(fixed(tag2).and.(.not.fixed(tag1)))then
 			do l=1,3
