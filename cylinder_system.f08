@@ -2,7 +2,7 @@ module common_stuff
 	implicit none
 	integer(8),parameter::maxbin=20!maximum number of radial bins
 	integer(8),parameter::maxcyl=10!maximum number of cylinders
-	integer(8),parameter::maxpartic=10000!maximum number of particles in the system
+	integer(8),parameter::maxpartic=16000!maximum number of particles in the system
 	integer(8),parameter::maxcells=20!maximum number of cells per dimension
 	logical::andersen=.false.!if true the andersen thermostat will be active
 	logical::berendsen=.false.!if true the berendsen thermostat will be active
@@ -16,7 +16,7 @@ module common_stuff
 	integer(8)::amntfree=0!amount of free particles in the simulation
 	integer(8)::amnttot=0!amount of total particles in the simulation
 	integer(8)::distbins(maxbin)=0!these bins will count how many particles are in the divisions of the (0,L/2] interval in which the radial distribution will be measured
-	integer(8)::cells(maxpartic,maxcells,maxcells,maxcells)=0!lists containing the tags of the particles in each cell, the first index are the particles, the second one is the x axis, the third one is y and the last one is z
+	integer(8)::cells(maxpartic,maxcells,maxcells,maxcells)=0!lists containing the tags of the particles in each cell, the first index are the particles, the second one's the x axis, the third one's y and the last one's z
 	integer(8)::cvcount=0!this counter will keep track of how many measurements are used to calculate the heat capacity so the time average can be computed
 	integer(8)::cvcountcy(maxcyl)=0!this counter will keep track of how many measurements are used to calculate the heat capacity for each cylinder so the time average can be computed
 	integer(8)::difftag=0!this variable is the tag of the particle that will be followed to measure diffusion properties
@@ -84,9 +84,10 @@ program MD_3D_cylinders
 			else
 				call measuring()!with a certain frequency measurements are performed
 			end if
+			call velocity_histogram()
 		end if
 		time=time+tstep!time advances
-		if((.not.gnuplot).and.(mod(nint(time,8),nint(tmax,8)/100)==0))write(*,*) time*1.d2/tmax,'% completed.'!showing work in progress
+		if((.not.gnuplot).and.(mod(nint(time,8),500)==0))write(*,*) time*1.d2/tmax,'% completed.'!showing work in progress
 	end do
 	call output()!finishing up the writing of results
 contains
@@ -165,11 +166,15 @@ subroutine startup()!the system to be simulated is set up here
 	integer(8)::seed(8)=0!seed for the random number generator
 	integer(8)::vecindx(3)=0!here the indeces relevant to each dimensions are kept, for example the indeces of the cells in the crystalline lattice
 	real(8)::dran_g!gaussian random number
+	real(8)::dran_u!uniform random number
 	call date_and_time(values=seed)!creating a seed using the clock of the computer
-	call dran_ini(0)!seed(8))!initializing the random number generator
+	call dran_ini(seed(8))!initializing the random number generator
 	open(20,file='position_output.dat',action='write')!if the positions are to be visualized later they must be saved to this file
 	open(30,file='energy_temperature_pressure_diffusion_output.dat',action='write')!this is where the time evolution of these magnitudes will be kept
 	open(40,file='radial_distribution.dat',action='write')!and the radial distribution function values are here
+	open(60,file='velocity_histogram.dat',action='write')
+	write(60,*) 'unset key'!this just gets in the way
+	write(60,*) 'set grid'!the grid makes it easier to read
 	radius=2.5d-1*dmin1(siz(1),siz(2))!radius based on the size of the system
 	!radius=2.d1*2.d0**(1.d0/6.d0)*sigm!radius based on 20 equlibrium distances
 	volum=siz(1)*siz(2)*siz(3)!volume of the system
@@ -272,6 +277,7 @@ subroutine startup()!the system to be simulated is set up here
 	call remove_average_momentum()!the system should't have a global net movement so it is removed here if there's any
 	call create_cell_lists()!cells are needed to calculate the forces
 	call calculate_forces()!before the first integration iteration can be carried out, the forces need to be calculated
+	call save_state()!storing the generated structure in
 	return
 contains
 	subroutine remove_average_momentum()!to avoid the system having a drift, the average momentum must be substracted to all the particles in the system
@@ -576,7 +582,7 @@ contains
 		else if(measure)then
 			epot=epot+4.d0*epsi*(sigm/dist)**6*((sigm/dist)**6-1.d0)+potentialshift!this is the potential energy
 		end if
-		press=press-force*dist!to calculate the pressure, the sum over all interactions must be carried out
+		press=press+dist**2*force!to calculate the pressure, the sum over all interactions must be carried out
 		return
 	end subroutine interacting
 end subroutine calculate_forces
@@ -672,7 +678,7 @@ subroutine diffusion_with_cylinders()
 	use common_stuff
 	implicit none
 	real(8)::dran_u!uniform random number
-	
+
 	do
 		difftag=nint(dble(amntfree)*dran_u(),8)!choosing randomly the particle that will be used to measure diffusion properties
 		if(difftag>0)exit!just in case the tag is 0 or negative
@@ -699,7 +705,7 @@ subroutine radial_distribution()
 				tag=i!and the tag is kept for later use
 			end if
 		end do
-		firststep=.false.!the loop directly above is meant to be run only once
+		firststep=.false.!this if loop is meant to be run only once
 	end if
 	do i=1,amnttot
 		dist=dsqrt((rvec(1,tag)-rvec(1,i))**2+(rvec(2,tag)-rvec(2,i))**2+(rvec(3,tag)-rvec(3,i))**2)!distance between particles
@@ -734,6 +740,7 @@ subroutine output()!after the simulation, some more stuff needs to be computed a
 	close(20)
 	close(30)
 	close(40)
+	close(60)
 	return
 end subroutine output
 
@@ -778,3 +785,45 @@ subroutine load_state()!and to retrieve a saved state this is the subroutine nee
 	close(50)
 	return
 end subroutine load_state
+
+
+
+subroutine velocity_histogram()
+	use common_stuff
+	implicit none
+	integer(8)::histogram(10)=0
+	integer(8)::i=0!particle counter
+	integer(8)::j=0!dimension counter
+	integer(8)::numbins=10!amount of divisions in the histogram
+	integer(8)::temph=0!temporal placeholder
+	real(8)::maxv=0.d0!maximum value found for the modules of the velocity vector
+	real(8)::minv=0.d0!minimum value found for the modules of the velocity vector
+	real(8)::sizeofbins=0.d0!how big the bins are
+	real(8)::speed(amnttot)!module of the velocity vector
+	maxv=-1.d100!resetting maximum
+	minv=1.d100!resetting minimum
+	do i=1,10
+		histogram(i)=0!resetting the histogram
+	end do
+	do i=1,amnttot
+		speed(i)=0.d0!setting the sum to zero
+		do j=1,3
+			speed(i)=speed(i)+vvec(j,i)**2!computing the module of the vector
+		end do
+		maxv=dmax1(maxv,speed(i))!recursively finding the maximum value
+		minv=dmin1(minv,speed(i))!recursively finding the minimum value
+	end do
+	sizeofbins=(maxv-minv)/dble(numbins)!finding the size of the bins
+	do i=1,amnttot
+		temph=ceiling((speed(i)-minv)/sizeofbins,8)!finding to which bin this value belongs
+		if(temph>numbins)temph=numbins!just in case the ceiling function fails
+		histogram(temph)=histogram(temph)+1!updating the histogram
+	end do
+	write(60,*) "plot '-' w lp"
+	write(60,*) minv,histogram(1)
+	do i=1,10
+		write(60,*) dble(i*sizeofbins)+minv,histogram(i)
+	end do
+	write(60,*) 'e'
+	return
+end subroutine velocity_histogram

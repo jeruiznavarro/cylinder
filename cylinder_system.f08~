@@ -2,7 +2,7 @@ module common_stuff
 	implicit none
 	integer(8),parameter::maxbin=20!maximum number of radial bins
 	integer(8),parameter::maxcyl=10!maximum number of cylinders
-	integer(8),parameter::maxpartic=10000!maximum number of particles in the system
+	integer(8),parameter::maxpartic=16000!maximum number of particles in the system
 	integer(8),parameter::maxcells=20!maximum number of cells per dimension
 	logical::andersen=.false.!if true the andersen thermostat will be active
 	logical::berendsen=.false.!if true the berendsen thermostat will be active
@@ -86,6 +86,7 @@ program MD_3D_cylinders
 			end if
 		end if
 		time=time+tstep!time advances
+		if((.not.gnuplot).and.(mod(nint(time,8),500)==0))write(*,*) time*1.d2/tmax,'% completed.'!showing work in progress
 	end do
 	call output()!finishing up the writing of results
 contains
@@ -165,7 +166,7 @@ subroutine startup()!the system to be simulated is set up here
 	integer(8)::vecindx(3)=0!here the indeces relevant to each dimensions are kept, for example the indeces of the cells in the crystalline lattice
 	real(8)::dran_g!gaussian random number
 	call date_and_time(values=seed)!creating a seed using the clock of the computer
-	call dran_ini(0)!seed(8))!initializing the random number generator
+	call dran_ini((seed(8))!initializing the random number generator
 	open(20,file='position_output.dat',action='write')!if the positions are to be visualized later they must be saved to this file
 	open(30,file='energy_temperature_pressure_diffusion_output.dat',action='write')!this is where the time evolution of these magnitudes will be kept
 	open(40,file='radial_distribution.dat',action='write')!and the radial distribution function values are here
@@ -211,10 +212,10 @@ subroutine startup()!the system to be simulated is set up here
 						rvecini(k,j+1)=rvec(k,j+1)!storing the initial x position of the second particle
 						rvecini(k,j+2)=rvec(k,j+2)!storing the initial x position of the third particle
 						rvecini(k,j+3)=rvec(k,j+3)!storing the initial x position of the fourth particle
-						vvec(k,j)=dsqrt(kboltz*temp/mass)*dran_g()!velocity of the first particle
-						vvec(k,j+1)=dsqrt(kboltz*temp/mass)*dran_g()!velocity of the second particle
-						vvec(k,j+2)=dsqrt(kboltz*temp/mass)*dran_g()!velocity of the third particle
-						vvec(k,j+3)=dsqrt(kboltz*temp/mass)*dran_g()!velocity of the fourth particle
+						vvec(k,j)=dsqrt(kboltz*temp/mass)*dran_g()!(dran_u()-5.d-1)!velocity of the first particle
+						vvec(k,j+1)=dsqrt(kboltz*temp/mass)*dran_g()!(dran_u()-5.d-1)!velocity of the second particle
+						vvec(k,j+2)=dsqrt(kboltz*temp/mass)*dran_g()!(dran_u()-5.d-1)!velocity of the third particle
+						vvec(k,j+3)=dsqrt(kboltz*temp/mass)*dran_g()!(dran_u()-5.d-1)!velocity of the fourth particle
 					end do
 					if(.not.samemass)then
 						mvec(j)=mass!setting the mass of the first particle
@@ -559,7 +560,7 @@ contains
 		if((.not.fixed(tag1)).and.(.not.fixed(tag2)))then
 			do l=1,3
 				fvec(l,tag1)=fvec(l,tag1)+distvec(l)*force!and these are the components of the force vector for the first particle
-					fvec(l,tag2)=fvec(l,tag2)-distvec(l)*force!the same for the second particle
+				fvec(l,tag2)=fvec(l,tag2)-distvec(l)*force!the same for the second particle
 			end do
 		else if(fixed(tag2).and.(.not.fixed(tag1)))then
 			do l=1,3
@@ -575,7 +576,7 @@ contains
 		else if(measure)then
 			epot=epot+4.d0*epsi*(sigm/dist)**6*((sigm/dist)**6-1.d0)+potentialshift!this is the potential energy
 		end if
-		press=press-force*dist!to calculate the pressure, the sum over all interactions must be carried out
+		press=press+force*dist!to calculate the pressure, the sum over all interactions must be carried out
 		return
 	end subroutine interacting
 end subroutine calculate_forces
@@ -698,7 +699,7 @@ subroutine radial_distribution()
 				tag=i!and the tag is kept for later use
 			end if
 		end do
-		firststep=.false.!the loop directly above is meant to be run only once
+		firststep=.false.!this if loop is meant to be run only once
 	end if
 	do i=1,amnttot
 		dist=dsqrt((rvec(1,tag)-rvec(1,i))**2+(rvec(2,tag)-rvec(2,i))**2+(rvec(3,tag)-rvec(3,i))**2)!distance between particles
