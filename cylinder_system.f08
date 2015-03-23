@@ -87,7 +87,7 @@ program MD_3D_cylinders
 			call velocity_histogram()
 		end if
 		time=time+tstep!time advances
-		if((.not.gnuplot).and.(mod(nint(time,8),500)==0))write(*,*) time*1.d2/tmax,'% completed.'!showing work in progress
+		if((.not.gnuplot).and.(mod(nint(time,8),500)==0))write(*,*) nint(time*1.d2/tmax,8),'% completed.'!showing work in progress
 	end do
 	call output()!finishing up the writing of results
 contains
@@ -817,6 +817,7 @@ subroutine velocity_histogram()
 	do i=1,amnttot
 		temph=ceiling((speed(i)-minv)/sizeofbins,8)!finding to which bin this value belongs
 		if(temph>numbins)temph=numbins!just in case the ceiling function fails
+		if(temph<1)temph=1!just in case the ceiling function fails
 		histogram(temph)=histogram(temph)+1!updating the histogram
 	end do
 	write(60,*) "plot '-' w lp"
