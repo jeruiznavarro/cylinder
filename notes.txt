@@ -21,6 +21,7 @@ don't forget to finish implementing something to read masses from a file in case
 be careful when you change units, check the numerical values in the code, for example the shift of the potential energy
 check that the firststep in the radial distribution works
 maybe the pressure sum needs to be computed after all the forces have been calculated
+!#####HERE MAYBE THERE SHOULD BE A CONTRIBUTION TO THE POTENTIAL ENERGY FOR PARTICLES LOCATED EXCLUSIVELY IN EACH CYLINDER
 
 
 

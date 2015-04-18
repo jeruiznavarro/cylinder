@@ -1,2 +1,2 @@
-.false.,.false.,.false.,1.654d-6,.true.,.false.,1.0215d0,5.260d-1,6.6314d1,5,1.d2,9.06d-9,2.5d-1,.true.,3.405d-1,.false.,6.312d0,6.312d0,6.312d0,1.d3,3.d2,1.d3,1.d0,1.d0,5.d4
-#andersen,berendsen,cylinders,epsi,fcc,gnuplot,intrad,latcon,mass,meascylin,measintv,potentialshift,radius,samemass,sigm,simpcub,siz(1),siz(2),siz(3),temp,tempbath,tmeas,trelax,tstep,tmax
+.false.,.false.,50,1000,.false.,1.654d-6,.true.,.false.,.false.,1.0215d0,5.260d-1,6.6314d1,5,1.d2,9.06d-9,2.5d-1,.true.,3.405d-1,.false.,6.312d0,6.312d0,6.312d0,1.d2,3.d2,0.d0,1.d0,1.d-1,1.d4
+#andersen,berendsen,binhist,binrad,cylinders,epsi,fcc,gaussdistribution,gnuplot,intrad,latcon,mass,meascylin,measintv,potentialshift,radius,samemass,sigm,simpcub,siz(1),siz(2),siz(3),temp,tempbath,tmeas,trelax,tstep,tmax
