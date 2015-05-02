@@ -3,7 +3,6 @@
 when the liquid particles go from +z to -z they may get out of the cylinder, be careful with this
 when measuring and calculating stuff that depends on N is this variable only the free particles or all of them? it's probably just the free ones
 which temperature should be used to calculate Cv? the temporal average of all the simulation as well?
-which values should the speeds of the particles have? SOLVED: mean 0 and for the sd look at the project description of FYS4460, don't forget to check that the speeds have a gaussian distribution
 when calculating the pressure and the potential energy by cylinders, should it be counted according to the cylinder in which the particle receiving the interaction (n1) is located at? or should it be only when the interacting couple is in the cylider?
 is the potential energy between two fixed particles relevant?
 should the pressure be measured over a certain amount of steps so we can average over them? is the interval between the rest of measurements a good candidate for that amount of steps?
@@ -20,10 +19,11 @@ how to get ifort?
 don't forget to finish implementing something to read masses from a file in case they are different or just generating them according to where they are in the lattice
 be careful when you change units, check the numerical values in the code, for example the shift of the potential energy
 check that the firststep in the radial distribution works
-maybe the pressure sum needs to be computed after all the forces have been calculated
+modificate the potential shift so it's calculated in the startup subroutine, maybe use as argument the distance of the cutoff as the number of sigmas in that distance
+modificate the fcc,simpcub and porous variables so they are characters to select wich structure to generate
 !#####HERE MAYBE THERE SHOULD BE A CONTRIBUTION TO THE POTENTIAL ENERGY FOR PARTICLES LOCATED EXCLUSIVELY IN EACH CYLINDER
+!#####BE CAREFUL, IF THE SIMULATION BOX IS NOT COMPLETELY ON THE NON NEGATIVE PARTS OF THE AXES SEGMENTATION FAULTS MAY APPEAR WHEN CREATING THE CELL LISTS
 
 
 
-
-#####THIS IS THE ACTUAL SCALAR PRODUCT#####press=press+(fvec(1,tag1)*distvec(1)+fvec(2,tag1)*distvec(2)+fvec(3,tag1)*distvec(3))!to calculate the pressure, the force per particle is needed
+change kboltz, epsi, intard, latcon, mass, measintv, potentialshift, radius, sigma, siz, time, temp, tempbath, tmeas, trelax, tstep, tmax, all functions, remove_average_momentum(), half_leap(), interacting(), measuring(), measuring_with_cylinders()

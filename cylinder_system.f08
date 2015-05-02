@@ -1,6 +1,6 @@
 module common_stuff!common variables
-	implicit none
-	integer(8),parameter::maxbinrad=100!maximum number of radial bins
+	implicit none!all variables must be declared
+	integer(8),parameter::maxbinrad=10000!maximum number of radial bins
 	integer(8),parameter::maxbinhist=100!maximum number of bins for the velocity histogram
 	integer(8),parameter::maxcyl=10!maximum number of cylinders
 	integer(8),parameter::maxpartic=16000!maximum number of particles in the system
@@ -15,6 +15,7 @@ module common_stuff!common variables
 	logical::fixed(maxpartic)=.false.!this is true for fixed particles and false for free ones that can move
 	logical::gaussdistribution=.true.!if false, a uniform distribution for the velocities will be used instead of a gaussian one
 	logical::gnuplot=.false.!if true, the program will output data to be visualized in gnuplot
+	logical::measuring=.true.!if true, measurements will be taken
 	logical::samemass=.false.!if true, all the particles have the same mass
 	logical::simpcub=.false.!if true, a simple cubic structure will be generated
 	integer(8)::amntfix=0!amount of fixed particles in the simulation
@@ -29,6 +30,7 @@ module common_stuff!common variables
 	integer(8)::difftag=0!this variable is the tag of the particle that will be followed to measure diffusion properties
 	integer(8)::iterations=0!number of iterations carried out by the program
 	integer(8)::maxiter=0!maxmimum number of iterations
+	integer(8)::meascounter=0!number of measurements taken
 	integer(8)::meascylin=0!this is the number of cylindrical intervals in which there will be independent measurements of variables
 	integer(8)::measiter=0!number of iterations between measurements
 	integer(8)::numcells(3)=0!number of cells for each dimension (x=1, y=2, z=3)
@@ -67,6 +69,9 @@ module common_stuff!common variables
 	real(8)::time=0.d0!time for which the simulation has been running
 	real(8)::temp=0.d0!temperature of the system
 	real(8)::tempbath=0.d0!temperature of the heat bath
+	real(8)::tempmax=0.d0!maximum temperature during equilibrium after termalization
+	real(8)::tempmean=0.d0!mean temperature
+	real(8)::tempmin=0.d0!minimum temperature during equilibrium after termalization
 	real(8)::tempcy(maxcyl)=0.d0!temperature of each cylinder in the system
 	real(8)::threshold=0.d0!this variable is used to test if a particle will be affected by the andersen thermostat
 	real(8)::tmeas=0.d0!when time is greater or equal than this measurements will start
@@ -80,85 +85,115 @@ end module common_stuff
 
 
 program MD_3D_cylinders!main program
-	use common_stuff
-	implicit none
+	use common_stuff!sharing the common variables
+	implicit none!all variables must be declared
 	call input()!reading initial parameters
 	call startup()!setting up the system
-	if(.not.gnuplot)write(*,*) 0,'% completed at:',time8()!showing work in progress
+	if(.not.gnuplot)write(*,*) 'Simulation started at: ',ctime(time8())!showing work in progress
 	do
 		if(iterations>maxiter)exit!the program ends when it reaches the maximum time
 		call kinematics_and_dynamics()!moving the system
-		if((mod(iterations,measiter)==0).and.(time>=tmeas))then
+		if(((mod(iterations,measiter)==0).and.((time>=tmeas).or.(iterations==0))).and.(measuring.and.(.not.gnuplot)))then
 			if(cylinders)then
 				call measuring_with_cylinders()!with a certain frequency measurements are performed in each cylindrical section of the fluid cavity of the system
 			else
-				call measuring()!with a certain frequency measurements are performed
+				call normal_measuring()!with a certain frequency measurements are performed
 			end if
 		end if
 		time=time+tstep!time advances
 		iterations=iterations+1!one more iteration
 		firststep=.false.!this is no longer true after the first iteration
-		if((.not.gnuplot).and.(mod(iterations,maxiter/100)==0))write(*,*) nint(time*1.d2/tmax,8),'% completed at:',time8()!showing work in progress
+		if((.not.gnuplot).and.(mod(iterations,maxiter/100)==0))write(*,*) nint(time*1.d2/tmax,8),'% completed at: ',ctime(time8())!showing work in progress
 	end do
 	call output()!finishing up the writing of results
 contains
-	function length_to_SI(x)!this functions converts distances in units of the simulation to metres
-		implicit none
-		real(8)::length_to_SI!output value
+	real(8) function length_to_SI(x)!this functions converts distances in units of the simulation to metres
+		implicit none!all variables must be declared
 		real(8),intent(in)::x!the value to convert
 		length_to_SI=x*1.d-9!the conversion
 	end function length_to_SI
-	function length_from_SI(x)!this functions converts distances from metres to units of the simulation
-		implicit none
-		real(8)::length_from_SI!output value
+	real(8) function length_from_SI(x)!this functions converts distances from metres to units of the simulation
+		implicit none!all variables must be declared
 		real(8),intent(in)::x!the value to convert
 		length_from_SI=x*1.d9!the conversion
 	end function length_from_SI
-	function time_to_SI(x)!this functions converts times in units of the simulation to seconds
-		implicit none
-		real(8)::time_to_SI!output value
+	real(8) function time_to_SI(x)!this functions converts times in units of the simulation to seconds
+		implicit none!all variables must be declared
 		real(8),intent(in)::x!the value to convert
 		time_to_SI=x*1.d-15!the conversion
 	end function time_to_SI
-	function time_from_SI(x)!this functions converts times from seconds to units of the simulation
-		implicit none
-		real(8)::time_from_SI!output value
+	real(8) function time_from_SI(x)!this functions converts times from seconds to units of the simulation
+		implicit none!all variables must be declared
 		real(8),intent(in)::x!the value to convert
 		time_from_SI=x*1.d15!the conversion
 	end function time_from_SI
-	function mass_to_SI(x)!this functions converts masses in units of the simulation to kilograms
-		implicit none
-		real(8)::mass_to_SI!output value
+	real(8) function mass_to_SI(x)!this functions converts masses in units of the simulation to kilograms
+		implicit none!all variables must be declared
 		real(8),intent(in)::x!the value to convert
 		mass_to_SI=x*1.d-27!the conversion
 	end function mass_to_SI
-	function mass_from_SI(x)!this functions converts masses from kilograms to units of the simulation
-		implicit none
-		real(8)::mass_from_SI!output value
+	real(8) function mass_from_SI(x)!this functions converts masses from kilograms to units of the simulation
+		implicit none!all variables must be declared
 		real(8),intent(in)::x!the value to convert
 		mass_from_SI=x*1.d27!the conversion
 	end function mass_from_SI
-	function energy_to_SI(x)!this functions converts energies in units of the simulation to joules
-		implicit none
-		real(8)::energy_to_SI!output value
+	real(8) function energy_to_SI(x)!this functions converts energies in units of the simulation to joules
+		implicit none!all variables must be declared
 		real(8),intent(in)::x!the value to convert
 		energy_to_SI=x*1.d-15!the conversion
 	end function energy_to_SI
-	function energy_from_SI(x)!this functions converts enegies from joules to units of the simulation
-		implicit none
-		real(8)::energy_from_SI!output value
+	real(8) function energy_from_SI(x)!this functions converts enegies from joules to units of the simulation
+		implicit none!all variables must be declared
 		real(8),intent(in)::x!the value to convert
 		energy_from_SI=x*1.d15!the conversion
 	end function energy_from_SI
+	real(8) function temperature_to_SI(x)!this functions converts temperatures in units of the simulation to joules
+		implicit none!all variables must be declared
+		real(8),intent(in)::x!the value to convert
+		temperature_to_SI=x*1.d0!the conversion
+	end function temperature_to_SI
+	real(8) function temperature_from_SI(x)!this functions converts temperature from joules to units of the simulation
+		implicit none!all variables must be declared
+		real(8),intent(in)::x!the value to convert
+		temperature_from_SI=x*1.d0!the conversion
+	end function temperature_from_SI
 end program MD_3D_cylinders
 
 
 
 subroutine input()!reading initial parameters
-	use common_stuff
-	implicit none
+	use common_stuff!sharing the common variables
+	implicit none!all variables must be declared
 	open(10,file='input.dat',action='read')
-	read(10,*) andersen,berendsen,binhist,binrad,cylinders,epsi,fcc,gaussdistribution,gnuplot,intrad,latcon,mass,meascylin,measintv,potentialshift,radius,samemass,sigm,simpcub,siz(1),siz(2),siz(3),temp,tempbath,tmeas,trelax,tstep,tmax
+	read(10,*) andersen!if true the andersen thermostat will be active
+	read(10,*) berendsen!if true the berendsen thermostat will be active
+	read(10,*) binhist!number of bins for the velocity histograms
+	read(10,*) binrad!number of bins for the velocity histograms
+	read(10,*) cylinders!if true, independent measurements will be taken in the different cylindrical intervals of the system
+	read(10,*) epsi!depth parameter of the Lennard-Jones interaction
+	read(10,*) fcc!if true a face centered cubic structure will be generated
+	read(10,*) gaussdistribution!if false, a uniform distribution for the velocities will be used instead of a gaussian one
+	read(10,*) gnuplot!if true, the program will output data to be visualized in gnuplot
+	read(10,*) intrad!interaction radius
+	read(10,*) latcon!lattice constant
+	read(10,*) mass!generic mass of the particles
+	read(10,*) meascylin!this is the number of cylindrical intervals in which there will be independent measurements of variables
+	read(10,*) measintv!interval of time between measurements
+	read(10,*) measuring!if true, measurements will be taken
+	read(10,*) potentialshift!shift of the interaction potential
+	read(10,*) radius!radius of the non solid zone of the system where particles can flow
+	read(10,*) samemass!if true, all the particles have the same mass
+	read(10,*) sigm!size parameter of the Lennard-Jones interaction
+	read(10,*) simpcub!if true, a simple cubic structure will be generated
+	read(10,*) siz(1)!dimensions (x=1, y=2, z=3) of the simulation box
+	read(10,*) siz(2)!dimensions (x=1, y=2, z=3) of the simulation box
+	read(10,*) siz(3)!dimensions (x=1, y=2, z=3) of the simulation box
+	read(10,*) temp!temperature of the system
+	read(10,*) tempbath!temperature of the heat bath
+	read(10,*) tmeas!when time is greater or equal than this measurements will start
+	read(10,*) trelax!relaxation time for the andersen and berendsen thermostats
+	read(10,*) tstep!timestep of the simulation
+	read(10,*) tmax!time when the simulation should stop
 	close(10)
 	return
 end subroutine input
@@ -166,35 +201,30 @@ end subroutine input
 
 
 subroutine startup()!the system to be simulated is set up here
-	use common_stuff
-	implicit none
+	use common_stuff!sharing the common variables
+	implicit none!all variables must be declared
 	integer(8)::i1=0!x dimension counter
 	integer(8)::i2=0!y dimension counter
 	integer(8)::i3=0!z dimension counter
 	integer(8)::j=1!particle counter
-	integer(8)::k=0!dimension and auxiliary particle counter
+	integer(8)::k=0!dimension counter
+	integer(8)::l=0!auxiliary particle counter
 	integer(8)::seed(8)=0!seed for the random number generator
 	integer(8)::vecindx(3)=0!here the indeces relevant to each dimensions are kept, for example the indeces of the cells in the crystalline lattice
-	real(8)::dran_g!gaussian random number
-	real(8)::dran_u!uniform random number
-	real(8)::phi=0.d0!azimuthal angle
-	real(8)::theta=0.d0!polar angle
-	real(8)::v=0.d0!temporary variable to generate velocities
 	call date_and_time(values=seed)!creating a seed using the clock of the computer
 	call dran_ini(1000*seed(8)+3*seed(7)*seed(6)/10)!initializing the random number generator
 	open(20,file='position_output.dat',action='write')!if the positions are to be visualized later they must be saved to this file
 	open(30,file='energy_temperature_pressure_diffusion_output.dat',action='write')!this is where the time evolution of these magnitudes will be kept
 	open(40,file='radial_distribution.dat',action='write')!and the radial distribution function values are here
 	open(60,file='velocity_histogram.dat',action='write')!the velocity histogram is kept here in a format such that its evolution can be visualiazed as an animation in gnuplot
+	write(20,*) amnttot!the xyz format needs to have the amount of particles in the first line
+	write(20,*) 'This is an optional comment, but it must be here for the file to be readable by the visualizing program.'!and this comment is mandatory
+	write(30,*) '#	time	total energy	potential energy	kinetic energy	temperature	pressure	mean square displacement/6'!magnitudes in this file
 	write(60,*) 'set key top right'!placing the title in a place where it won't be much of a nuissance
 	write(60,*) 'set grid'!the grid makes it easier to read
-	measiter=nint(measintv/tstep,8)!number of iterations between measurements
-	maxiter=nint(tmax/tstep,8)!number of iterations between measurements
-	radius=2.5d-1*dmin1(siz(1),siz(2))!radius based on the size of the system
-	!radius=2.d1*2.d0**(1.d0/6.d0)*sigm!radius based on 20 equilibrium distances
-	volum=siz(1)*siz(2)*siz(3)!volume of the system
-	threshold=tstep/trelax!this is the value that the threshold for the andersen thermostat should have
-	l2=dmin1(siz(1),siz(2),siz(3))*5.d-1!the value of L/2 is chosen to be half of the smallest side of the simulation box
+	call flush(20)!forcing the program to write stuff
+	call flush(30)!forcing the program to write stuff
+	call flush(60)!forcing the program to write stuff
 	if(gnuplot)then
 		write(*,*) 'unset key'!this just gets in the way
 		write(*,*) 'set border 4095'!gnuplot initial configuration, displaying the borders of the simulation box
@@ -205,15 +235,42 @@ subroutine startup()!the system to be simulated is set up here
 		write(*,*) 'set zrange [0:',siz(3),']'!gnuplot initial configuration, z size of the simulation box
 		write(*,*) "splot '-' w p pt 7 lc 0"!new gnuplot frame
 	end if
-	do i1=0,nint(siz(1)/latcon,8)-1
-		vecindx(1)=i1!index of the current cell in the first dimension
-		do i2=0,nint(siz(2)/latcon,8)-1
-			vecindx(2)=i2!index of the current cell in the second dimension
-			do i3=0,nint(siz(3)/latcon,8)-1
-				vecindx(3)=i3!index of the current cell in the third dimension
-				if(simpcub.and.fcc)then
-					stop 'Attempted to generate more than one structure, aborting.'!the program needs just one of these two varaibles to be true, it won't work properly with both at the same time
-				else if(fcc)then!face centered cubic structure
+	call calculate_some_constants()!getting some values for some variables
+	if(simpcub.and.fcc)then
+		stop 'Attempted to generate more than one structure, aborting.'!the program needs just one of these two varaibles to be true, it won't work properly with both at the same time
+	else if(fcc)then
+		call create_fcc_structure()!face centered cubic structure
+	else if(simpcub)then
+		call create_sc_structure()!simple cubic structure
+	else
+		stop 'No crystalline structure defined, aborting.'!the program won't work without a defined structure
+	end if
+	if(gnuplot)write(*,*) 'e'!end of gnuplot frame
+	call velocity_histogram()!getting a first snapshot of the velocity distribution
+	call remove_average_momentum()!the system should't have a global net movement so it is removed here if there's any
+	call create_cell_lists()!cells are needed to calculate the forces
+	call calculate_forces()!before the first integration iteration can be carried out, the forces need to be calculated
+	call save_state()!storing the generated structure in the apropiate file
+	return
+contains
+	subroutine calculate_some_constants()!just making the startup subroutine cleaner
+		implicit none!all variables must be declared
+		measiter=nint(measintv/tstep,8)!number of iterations between measurements
+		maxiter=nint(tmax/tstep,8)!number of iterations between measurements
+		radius=2.5d-1*dmin1(siz(1),siz(2))!radius based on the size of the system
+		!radius=2.d1*2.d0**(1.d0/6.d0)*sigm!radius based on 20 equilibrium distances
+		volum=siz(1)*siz(2)*siz(3)!volume of the system
+		threshold=tstep/trelax!this is the value that the threshold for the andersen thermostat should have
+		l2=dmin1(siz(1),siz(2),siz(3))*5.d-1!the value of L/2 is chosen to be half of the smallest side of the simulation box
+		return
+	end subroutine calculate_some_constants
+	subroutine create_fcc_structure()!a face centered cubic structure will be generated here
+		implicit none!all variables must be declared
+		real(8)::dran_g!gaussian random number
+		real(8)::dran_u!uniform random number
+		do i1=0,nint(siz(1)/latcon,8)-1
+			do i2=0,nint(siz(2)/latcon,8)-1
+				do i3=0,nint(siz(3)/latcon,8)-1
 					rvec(1,j)=latcon*dble(i1)!x position for the first particle of the crystalline cell
 					rvec(2,j)=latcon*dble(i2)!y position for the first particle of the crystalline cell
 					rvec(3,j)=latcon*dble(i3)!z position for the first particle of the crystalline cell
@@ -227,28 +284,18 @@ subroutine startup()!the system to be simulated is set up here
 					rvec(2,j+3)=latcon*dble(i2)!y position for the fourth particle of the crystalline cell
 					rvec(3,j+3)=latcon*(5.d-1+dble(i3))!z position for the fourth particle of the crystalline cell
 					if(gaussdistribution)then
-						do k=0,3
-							v=dsqrt(kboltz*temp/mass)*dran_g()!random gaussian module for the velocities
-							phi=2.d0*pi*(dran_u()-5.d-1)!random azimuthal angle for the velocities
-							theta=pi*(dran_u()-5.d-1)!random polar angle for the velocities
-							vvec(1,j+k)=v*dcos(theta)*dcos(phi)!x component of the velocity
-							vvec(2,j+k)=v*dcos(theta)*dsin(phi)!y component of the velocity
-							vvec(3,j+k)=v*dsin(theta)!z component of the velocity
-							rvecini(1,j+k)=rvec(1,j+k)!storing the initial x position of the particles
-							rvecini(2,j+k)=rvec(2,j+k)!storing the initial y position of the particles
-							rvecini(3,j+k)=rvec(3,j+k)!storing the initial z position of the particles
+						do l=0,3
+							do k=1,3
+								vvec(k,j+l)=dsqrt(kboltz*temp/mass)*dran_g()!random gaussian components for the velocities
+								rvecini(k,j+l)=rvec(k,j+l)!storing the initial position of the particles
+							end do
 						end do
 					else
-						do k=0,3
-							v=3.d0*dsqrt(kboltz*temp/mass)*dran_u()!random uniform module for the velocities
-							phi=2.d0*pi*(dran_u()-5.d-1)!random azimuthal angle for the velocities
-							theta=pi*(dran_u()-5.d-1)!random polar angle for the velocities
-							vvec(1,j+k)=v*dsin(theta)*dcos(phi)!x component of the velocity
-							vvec(2,j+k)=v*dsin(theta)*dsin(phi)!y component of the velocity
-							vvec(3,j+k)=v*dcos(theta)!z component of the velocity
-							rvecini(1,j+k)=rvec(1,j+k)!storing the initial x position of the particles
-							rvecini(2,j+k)=rvec(2,j+k)!storing the initial y position of the particles
-							rvecini(3,j+k)=rvec(3,j+k)!storing the initial z position of the particles
+						do l=0,3
+							do k=1,3
+								vvec(k,j+l)=3.d0*dsqrt(kboltz*temp/mass)*(dran_u()-5.d-1)!random uniform components for the velocities
+								rvecini(k,j+l)=rvec(k,j+l)!storing the initial position of the particles
+							end do
 						end do
 					end if
 					if(.not.samemass)then
@@ -268,7 +315,24 @@ subroutine startup()!the system to be simulated is set up here
 							write(*,*) rvec(1,j+k),rvec(2,j+k),rvec(3,j+k)!data feed to gnuplot
 						end do
 					end if
-				else if(simpcub)then!simple cubic structure
+				end do
+			end do
+		end do
+		amnttot=j-1!total amount of particles for the fcc structure
+		amntfree=amnttot!just in case, to avoid problems since there are no fixed particles in this situation
+		dens=amnttot/volum!this is the number density of all the particles
+		return
+	end subroutine
+	subroutine create_sc_structure()!a simple cubic structure will be generated here
+		implicit none!all variables must be declared
+		real(8)::dran_g!gaussian random number
+		!real(8)::dran_u!uniform random number
+		do i1=0,nint(siz(1)/latcon,8)-1
+			vecindx(1)=i1!index of the current cell in the first dimension
+			do i2=0,nint(siz(2)/latcon,8)-1
+				vecindx(2)=i2!index of the current cell in the second dimension
+				do i3=0,nint(siz(3)/latcon,8)-1
+					vecindx(3)=i3!index of the current cell in the third dimension
 					do k=1,3
 						rvec(k,j)=latcon*dble(vecindx(k))!position in the solid lattice of the material, free particles will leave these as they move
 					end do
@@ -288,39 +352,74 @@ subroutine startup()!the system to be simulated is set up here
 					end if
 					j=j+1!next particle
 					if(gnuplot)write(*,*) rvec(1,j),rvec(2,j),rvec(3,j)!data feed to gnuplot
-				else
-					stop 'No crystalline structure defined, it must be either simple cubic or face centered cubic, aborting.'!the program won't work without a defined structure
-				end if
+				end do
 			end do
 		end do
-	end do
-	if(gnuplot)write(*,*) 'e'!end of gnuplot frame
-	if(simpcub)then
 		amnttot=j-1!total amount of particles for the sc structure
 		dens=amntfree/(siz(3)*pi*radius**2)!this is the number density of the free particles
-	else if(fcc)then
+		return
+	end subroutine
+	subroutine create_porous_structure()!a structure composed of a fcc crystal with empty cylinders is generated here
+		implicit none!all variables must be declared
+		real(8)::dran_g!gaussian random number
+		real(8)::dran_u!uniform random number
+		do i1=0,nint(siz(1)/latcon,8)-1
+			do i2=0,nint(siz(2)/latcon,8)-1
+				do i3=0,nint(siz(3)/latcon,8)-1
+					rvec(1,j)=latcon*dble(i1)!x position for the first particle of the crystalline cell
+					rvec(2,j)=latcon*dble(i2)!y position for the first particle of the crystalline cell
+					rvec(3,j)=latcon*dble(i3)!z position for the first particle of the crystalline cell
+					rvec(1,j+1)=latcon*(5.d-1+dble(i1))!x position for the second particle of the crystalline cell
+					rvec(2,j+1)=latcon*(5.d-1+dble(i2))!y position for the second particle of the crystalline cell
+					rvec(3,j+1)=latcon*dble(i3)!z position for the second particle of the crystalline cell
+					rvec(1,j+2)=latcon*dble(i1)!x position for the third particle of the crystalline cell
+					rvec(2,j+2)=latcon*(5.d-1+dble(i2))!y position for the third particle of the crystalline cell
+					rvec(3,j+2)=latcon*(5.d-1+dble(i3))!z position for the third particle of the crystalline cell
+					rvec(1,j+3)=latcon*(5.d-1+dble(i1))!x position for the fourth particle of the crystalline cell
+					rvec(2,j+3)=latcon*dble(i2)!y position for the fourth particle of the crystalline cell
+					rvec(3,j+3)=latcon*(5.d-1+dble(i3))!z position for the fourth particle of the crystalline cell
+					if(gaussdistribution)then
+						do l=0,3
+							do k=1,3
+								vvec(k,j+l)=dsqrt(kboltz*temp/mass)*dran_g()!random gaussian components for the velocities
+								rvecini(k,j+l)=rvec(k,j+l)!storing the initial position of the particles
+							end do
+						end do
+					else
+						do l=0,3
+							do k=1,3
+								vvec(k,j+l)=3.d0*dsqrt(kboltz*temp/mass)*(dran_u()-5.d-1)!random uniform components for the velocities
+								rvecini(k,j+l)=rvec(k,j+l)!storing the initial position of the particles
+							end do
+						end do
+					end if
+					if(.not.samemass)then
+						mvec(j)=mass!setting the mass of the first particle as a constant
+						mvec(j+1)=mass!setting the mass of the second particle as a constant
+						mvec(j+2)=mass!setting the mass of the third particle as a constant
+						mvec(j+3)=mass!setting the mass of the fourth particle as a constant
+					else
+						mvec(j)=mass!setting the mass of the first particle
+						mvec(j+1)=mass**2!setting the mass of the second particle
+						mvec(j+2)=mass!setting the mass of the third particle
+						mvec(j+3)=mass**2!setting the mass of the fourth particle
+					end if
+					j=j+4!next particles
+					if(gnuplot)then
+						do k=0,3
+							write(*,*) rvec(1,j+k),rvec(2,j+k),rvec(3,j+k)!data feed to gnuplot
+						end do
+					end if
+				end do
+			end do
+		end do
 		amnttot=j-1!total amount of particles for the fcc structure
 		amntfree=amnttot!just in case, to avoid problems since there are no fixed particles in this situation
 		dens=amnttot/volum!this is the number density of all the particles
-	end if
-	write(20,*) amnttot!the xyz format needs to have the amount of particles in the first line
-	write(20,*) 'This is an optional comment, but it must be here for the file to be readable by the visualizing program.'!and this comment is mandatory
-	write(30,*) '#	time	total energy	potential energy	kinetic energy	temperature	pressure	mean square displacement/6'!magnitudes in this file
-	call velocity_histogram()!getting a first snapshot of the velocity distribution
-	call create_crystalline_structure()!setting up the crystal of the system
-	call remove_average_momentum()!the system should't have a global net movement so it is removed here if there's any
-	call create_cell_lists()!cells are needed to calculate the forces
-	call calculate_forces()!before the first integration iteration can be carried out, the forces need to be calculated
-	call save_state()!storing the generated structure in the apropiate file
-	return
-contains
-	subroutine create_crystalline_structure()
-		implicit none
-
 		return
 	end subroutine
 	subroutine remove_average_momentum()!to avoid the system having a drift, the average momentum must be substracted to all the particles in the system
-		implicit none
+		implicit none!all variables must be declared
 		integer(8)::i=0!particle counter
 		integer(8)::j=0!dimension counter
 		real(8)::mmntsum(3)=0.d0!the global momentum will be stored here
@@ -352,30 +451,30 @@ contains
 		return
 	end subroutine remove_average_momentum
 	subroutine create_cell_lists()!cell lists are used to speed up the simulation, see the article in wikipedia for more general details
-		implicit none
-		integer(8)::i=0!dimension counter
-		integer(8)::indeces(3)=0!indeces of the cell in which a particle is
-		integer(8)::j=0!particle counter
-		do i=1,3
-			numcells(i)=floor(siz(i)/intrad,8)!computing how many cells each dimension has
-			cellsize(i)=siz(i)/dble(numcells(i))!calculating how big the cells are
+		implicit none!all variables must be declared
+		integer(8)::i=0!particle counter
+		integer(8)::inds(3)=0!indeces of the cell in which a particle is
+		integer(8)::j=0!dimension counter
+		do j=1,3
+			numcells(j)=floor(siz(j)/intrad,8)!computing how many cells each dimension has
+			cellsize(j)=siz(j)/dble(numcells(j))!calculating how big the cells are
 		end do
-		do j=1,amnttot
-			do i=1,3
-				indeces(i)=floor(rvec(i,j)/cellsize(i),8)+1!particle j is the cell which has these indeces
+		do i=1,amnttot
+			do j=1,3
+				inds(j)=floor(rvec(j,i)/cellsize(j),8)+1!particle j is the cell which has these indeces
 			end do
-			occup(indeces(1),indeces(2),indeces(3))=occup(indeces(1),indeces(2),indeces(3))+1!updating the occupancy list with the new particle
-			cells(occup(indeces(1),indeces(2),indeces(3)),indeces(1),indeces(2),indeces(3))=j!adding the new particle to the apropiate cell
+			occup(inds(1),inds(2),inds(3))=occup(inds(1),inds(2),inds(3))+1!updating the occupancy list with the new particle
+			cells(occup(inds(1),inds(2),inds(3)),inds(1),inds(2),inds(3))=i!adding the new particle to the apropiate cell
 		end do
 		return
-	end subroutine create_cell_lists!			#####BE CAREFUL, IF THE SIMULATION BOX IS NOT COMPLETELY ON THE NON NEGATIVE PARTS OF THE AXES SEGMENTATION FAULTS MAY APPEAR
+	end subroutine create_cell_lists
 end subroutine startup
 
 
 
 subroutine kinematics_and_dynamics()!this is the integrator of the simulation, in this case the Verlet integrator
-	use common_stuff
-	implicit none
+	use common_stuff!sharing the common variables
+	implicit none!all variables must be declared
 	integer(8)::i=0!x dimension cell counter
 	integer(8)::j=0!y dimension cell counter
 	integer(8)::k=0!z dimension cell counter
@@ -390,7 +489,7 @@ subroutine kinematics_and_dynamics()!this is the integrator of the simulation, i
 	return
 contains
 	subroutine half_leap(thermostat)!the verlet integrator requires to update the velocities in two steps, the subroutine distinguishes when the particles have the same mass and when they don't
-		implicit none
+		implicit none!all variables must be declared
 		logical,intent(in)::thermostat!this variable controls if the thermostat should be applied or not
 		logical::andersenpart=.false.!if true, the particle will collide according to the thermostat rules
 		real(8)::dran_g!gaussian random number
@@ -446,7 +545,7 @@ contains
 		return
 	end subroutine half_leap
 	subroutine move()!this is where the actual movement of the particles takes place
-		implicit none
+		implicit none!all variables must be declared
 		if(gnuplot)write(*,*) "splot '-' w p pt 7 lc 0"!new gnuplot frame
 		do k=1,numcells(3)
 			do j=1,numcells(2)
@@ -475,7 +574,7 @@ contains
 		return
 	end subroutine move
 	subroutine update_particles_in_cells()!the particles may be in a different cell after moving, so the lists need to be updated
-		implicit none
+		implicit none!all variables must be declared
 		integer(8)::inew=0!x dimension, new-cell counter
 		integer(8)::jnew=0!y dimension, new-cell counter
 		integer(8)::knew=0!z dimension, new-cell counter
@@ -510,8 +609,8 @@ end subroutine kinematics_and_dynamics
 
 
 subroutine calculate_forces()!obtaining the values for the forces of the particles
-	use common_stuff
-	implicit none
+	use common_stuff!sharing the common variables
+	implicit none!all variables must be declared
 	logical::interaction(maxpartic,maxpartic)=.false.!this matrix stores which interactions have been calculated already
 	logical::measure=.false.!if it is time to make a measurement this variable will be true
 	integer(8)::i1=0!x dimension cell counter for the first particle
@@ -532,10 +631,8 @@ subroutine calculate_forces()!obtaining the values for the forces of the particl
 	real(8)::dist=0.d0!distance between particles
 	real(8)::distvec(3)=0.d0!vectorial distance between particles
 	real(8)::force=0.d0!modulus of the force vector
-	if((nint(dmod(time,measintv),8)==0).and.(time>=tmeas))then
+	if(((mod(iterations,measiter)==0).and.((time>=tmeas).or.(iterations==0))).and.(measuring.and.(.not.gnuplot)))then
 		measure=.true.!to avoid computing the above many times, this logical variable is set
-		epot=0.d0!setting the potential energy to zero so it can be calculated
-		presscount=0!setting the counter to zero for the next measurement of the presure
 	else
 		measure=.false.!to make sure it stays false when it should
 	end if
@@ -574,7 +671,7 @@ subroutine calculate_forces()!obtaining the values for the forces of the particl
 	return
 contains
 	subroutine periodic_interaction(dimen,inindex,outindex)!in the case that some cell is beyond the limits, this will apply the periodic boundary conditions to the interaction between the particles
-		implicit none
+		implicit none!all variables must be declared
 		integer(4),intent(in)::dimen!dimension in which the subroutine is carried out, 1 is x-axis, 2 is y-axis and 3 is z-axis, the kind is 4 to avoid problems when it's called with a constant integer
 		integer(8),intent(in)::inindex!this number runs through the range of possible values for neighbouring cells
 		integer(8),intent(out)::outindex!and this is the resulting index of that cell
@@ -591,7 +688,7 @@ contains
 		return
 	end subroutine periodic_interaction
 	subroutine interacting()!this is where the actual interaction happens
-		implicit none
+		implicit none!all variables must be declared
 		interaction(tag1,tag2)=.true.!accounting for this interaction
 		do l=1,3
 			distvec(l)=rvec(l,tag1)-rvec(l,tag2)-displ(l)!these are the components of the vectorial distance between the particles
@@ -628,11 +725,10 @@ end subroutine calculate_forces
 
 
 
-subroutine measuring()!here the different measurements are performed
-	use common_stuff
-	implicit none
+subroutine normal_measuring()!here the different measurements are performed
+	use common_stuff!sharing the common variables
+	implicit none!all variables must be declared
 	integer(8)::i=0!particle counter
-	integer(8)::rcounter=0
 	ekine=0.d0!setting the kinetic energy to zero to calculate the new values
 	squaredispl=0.d0!same for the mean square displacement
 	if(samemass)then
@@ -650,17 +746,25 @@ subroutine measuring()!here the different measurements are performed
 	sumekinesqur=sumekinesqur+ekine**2!and the squared kinetic energy
 	cvcount=cvcount+1!another measurement for the heat capacity
 	temp=(2.d0*ekine)/(3.d0*amntfree*kboltz)!and with the kinetic energy the temperature is measured too
+	if(iterations>0)then
+		tempmax=dmax1(temp,tempmax)!recursively finding the maximum temperature
+		tempmean=tempmean+temp!keeping track of the mean temperature
+		tempmin=dmin1(temp,tempmin)!recursively finding the minimum temperature
+	end if
 	press=dens*temp*kboltz+press/(3.d0*volum*dble(presscount))!final result for the pressure
-	call velocity_histogram()
-	call diffusion()
-	if(rcounter<=10)call radial_distribution()!getting a new sample of the radial distribution
-	rcounter=rcounter+1
+	call velocity_histogram()!obtaining another snapshot of the velocity distribution
+	call diffusion()!measuring the diffusion of the particles
+	if(meascounter<=10)call radial_distribution()!getting a new sample of the radial distribution
+	meascounter=meascounter+1!another measurement
 	write(30,*) time,epot+ekine,epot,ekine,temp,press,squaredispl/(6.d0*amnttot)!writing data
+	call flush(30)!forcing the program to write stuff
+	epot=0.d0!setting the potential energy to zero so it can be calculated again
 	press=0.d0!discarding the old value of the pressure so the new one can be computed in the next steps
+	presscount=0!setting the counter to zero for the next measurement of the presure
 	return
 contains
 	subroutine diffusion()
-		implicit none
+		implicit none!all variables must be declared
 		integer(8)::i=0!particle counter
 		integer(8)::j=0!dimension counter
 		real(8)::tmp=0.d0!temporary variable to calculate the distance travelled by the particles
@@ -673,13 +777,13 @@ contains
 		end do
 		return
 	end subroutine diffusion
-end subroutine measuring
+end subroutine normal_measuring
 
 
 
 subroutine measuring_with_cylinders()!here the different measurements are performed in each cylinder, whether all the particles have the same mass or not
-	use common_stuff
-	implicit none
+	use common_stuff!sharing the common variables
+	implicit none!all variables must be declared
 	integer(8)::i=0!particle counter
 	integer(8)::j=0!cylinder counter
 	do j=1,maxcyl
@@ -716,12 +820,12 @@ subroutine measuring_with_cylinders()!here the different measurements are perfor
 			tempcy(j)=(2.d0*ekinecy(j))/(3.d0*amntfree*kboltz)!and with the kinetic energy the temperature is measured too per cylinder
 		end do
 	end if
-	call velocity_histogram()
-	call diffusion_with_cylinders()
+	call velocity_histogram()!getting a sample of the velocities
+	call diffusion_with_cylinders()!obtaining another diffusion measurement
 	return
 contains
 	subroutine diffusion_with_cylinders()
-		implicit none
+		implicit none!all variables must be declared
 		real(8)::dran_u!uniform random number
 
 		do
@@ -735,8 +839,8 @@ end subroutine measuring_with_cylinders
 
 
 subroutine radial_distribution()!computing the radial distribution
-	use common_stuff
-	implicit none
+	use common_stuff!sharing the common variables
+	implicit none!all variables must be declared
 	integer(8)::bintag=0!tag of the current bin
 	integer(8)::i=0!particle counter
 	integer(8)::tag=0!tag for the first particle
@@ -755,6 +859,7 @@ subroutine radial_distribution()!computing the radial distribution
 		dist=dsqrt((rvec(1,tag)-rvec(1,i))**2+(rvec(2,tag)-rvec(2,i))**2+(rvec(3,tag)-rvec(3,i))**2)!distance between particles
 		if(dist<=l2)then
 			bintag=nint(dist*dble(binrad)/l2,8)!this is the bin in which the particle is
+			if(bintag>binrad)bintag=binrad!just in case the nint function fails
 			if(bintag<1)bintag=1!just in case the particles are too close
 			distbins(bintag)=distbins(bintag)+1!counting another particle in the appropiate bin
 		end if
@@ -766,8 +871,8 @@ end subroutine radial_distribution
 
 
 subroutine velocity_histogram()!computing the velocity histogram
-	use common_stuff
-	implicit none
+	use common_stuff!sharing the common variables
+	implicit none!all variables must be declared
 	integer(8)::histogram(3,maxbinhist)=0!in this vector the values of the velocity histogram will be kept for each component (x->(1,:), y->(2,:), z->(3,:))
 	integer(8)::i=0!particle counter
 	integer(8)::j=0!dimension counter
@@ -798,7 +903,7 @@ subroutine velocity_histogram()!computing the velocity histogram
 			temph(j)=ceiling((vvec(j,i)-minv(j))/sizeofbins(j),8)!finding to which bin this value belongs
 			if(temph(j)>binhist)temph(j)=binhist!just in case the ceiling function fails
 			if(temph(j)<1)temph(j)=1!just in case the ceiling function fails
-			histogram(j,temph)=histogram(j,temph)+1!updating the histogram
+			histogram(j,temph(j))=histogram(j,temph(j))+1!updating the histogram
 		end do
 	end do
 	write(60,*) "plot '-' lc rgb variable w lp title 'Histogram of velocity components: Red -> x, Green -> y, Blue -> z'"!frame start
@@ -814,42 +919,44 @@ subroutine velocity_histogram()!computing the velocity histogram
 		write(60,*) dble(i)*sizeofbins(3)+minv(3),histogram(3,i),'0x0000FF'!writing histogram data to file
 	end do
 	write(60,*) 'e'!end of frame
+	call flush(60)!forcing the program to write stuff
 	return
 end subroutine velocity_histogram
 
 
 
 subroutine output()!after the simulation is done, some more stuff needs to be computed and the files need to be closed
-	use common_stuff
-	implicit none
+	use common_stuff!sharing the common variables
+	implicit none!all variables must be declared
 	integer(8)::i=0!cylinder and bin counter
 	if(cylinders)then
 		do i=1,maxcyl
 			cvcy(i)=(3.d0*kboltz)/((4.d0*amntfree*(sumekinecy(i)**2/dble(cvcountcy(i))-sumekinecysqur(i))/(dble(cvcountcy(i))*3.d0*kboltz*tempcy(i)**2))-2.d0)!computing the final value of the heat capacity
 			write(30,*) '# The heat capacity in cylinder',i,'is:',cvcy(i)!writing data
 		end do
+		write(30,*) '# And the mean temperature is:',tempmean!writing data
 	else
 		do i=1,binrad
 			write(40,*) dble(i)*l2/dble(binrad),dble(distbins(i))/(dble(radcount)*dens)!writing the data of the radial distribution
 		end do
 		cv=(3.d0*kboltz)/((4.d0*amnttot*(sumekine**2/dble(cvcount)-sumekinesqur)/(dble(cvcount)*3.d0*kboltz*temp**2))-2.d0)!computing the final value of the heat capacity
-		write(30,*) '# The heat capacity is:',cv!writing data
+		write(30,*) '# The heat capacity is:',cv,', the mean temperature is:',tempmean/dble(meascounter),', the maximum temperature is:',tempmax,', the minimum temperature is:',tempmin!writing data
 	end if
-	close(20)
-	close(30)
-	close(40)
-	close(60)
+	close(20)!disconnecting the position_output file
+	close(30)!disconnecting the energy_temperature_pressure_diffusion_output file
+	close(40)!disconnecting the radial_distribution file
+	close(60)!disconnecting the velocity_histogram file
 	return
 end subroutine output
 
 
 
 subroutine save_state()!if the current state is to be preserved it can be saved to a file with this subroutine
-	use common_stuff
-	implicit none
+	use common_stuff!sharing the common variables
+	implicit none!all variables must be declared
 	integer(8)::i=0!particle counter
 	open(50,file='saved_state.dat',action='write')
-	write(50,*) amnttot
+	write(50,*) amnttot!writing out the total amount of particles in the simulation
 	if(samemass)then
 		do i=1,amnttot
 			write(50,*) rvec(1,i),rvec(2,i),rvec(3,i),vvec(1,i),vvec(2,i),vvec(3,i),fvec(1,i),fvec(2,i),fvec(3,i)!reading positions, velocities and forces when the masses are all equal
@@ -859,18 +966,18 @@ subroutine save_state()!if the current state is to be preserved it can be saved 
 			write(50,*) rvec(1,i),rvec(2,i),rvec(3,i),vvec(1,i),vvec(2,i),vvec(3,i),fvec(1,i),fvec(2,i),fvec(3,i),mvec(i)!reading positions, velocities and forces when the masses are different
 		end do
 	end if
-	close(50)
+	close(50)!disconnecting the saved_state file
 	return
 end subroutine save_state
 
 
 
 subroutine load_state()!and to retrieve a saved state this is the subroutine needed
-	use common_stuff
-	implicit none
+	use common_stuff!sharing the common variables
+	implicit none!all variables must be declared
 	integer(8)::i=0!particle counter
 	open(50,file='saved_state.dat',action='read')
-	read(50,*) amnttot
+	read(50,*) amnttot!reading in the total amount of particles in the simulation
 	if(amnttot>maxpartic)stop 'Not enough space for so many particles, the variable "maxpartic" should be at least as big as "amnttot".'!avoiding segmentation faults
 	if(samemass)then
 		do i=1,amnttot
@@ -881,6 +988,6 @@ subroutine load_state()!and to retrieve a saved state this is the subroutine nee
 			read(50,*) rvec(1,i),rvec(2,i),rvec(3,i),vvec(1,i),vvec(2,i),vvec(3,i),fvec(1,i),fvec(2,i),fvec(3,i),mvec(i)
 		end do
 	end if
-	close(50)
+	close(50)!disconnecting the saved_state file
 	return
 end subroutine load_state
