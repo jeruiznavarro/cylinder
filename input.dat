@@ -1,29 +1,28 @@
-.false.,#andersen
-.false.,#berendsen
-50,#binhist
-1000,#binrad
-.false.,#cylinders
-1.654d-6,#epsi
-.true.,#fcc
-.true.,#gaussdistribution
-.false.,#gnuplot
-1.0215d0,#intrad
-5.260d-1,#latcon
-6.6314d1,#mass
-5,#meascylin
-1.d2,#measintv
-.true.,#measuring
-9.06d-9,#potentialshift
-2.5d-1,#radius
-.true.,#samemass
-3.405d-1,#sigm
-.false.,#simpcub
-6.312d0,#siz(1)
-6.312d0,#siz(2)
-6.312d0,#siz(3)
-9.75d2,#temp
-1.d2,#tempbath
-1.d3,#tmeas
-1.d-1,#trelax
-1.d-1,#tstep
-1.d4,#tmax
+.false.,#andersen										if true the andersen thermostat will be active
+.false.,#berendsen										if true the berendsen thermostat will be active
+50,#binhist												number of bins for the velocity histograms
+1000,#binrad 											number of bins for the radial distribution
+.false.,#cylinders										if true, independent measurements will be taken in the different cylindrical intervals of the system
+1.654d-6,#epsi											depth parameter of the Lennard-Jones interaction
+.true.,#gaussdistribution								if false, a uniform distribution for the velocities will be used instead of a gaussian one
+.false.,#gnuplot										if true, the program will output data to be visualized in gnuplot
+1.0215d0,#intrad										interaction radius, cut-off for the potential, beyond this distance there is no interaction
+5.260d-1,#latcon										lattice constant
+6.6314d1,#mass											generic mass of the particles
+5,#meascylin											this is the number of cylindrical intervals in which there will be independent measurements of variables
+1.d2,#measintv											interval of time between measurements
+.true.,#measuring										if true, measurements will be taken
+20,#pores												amount of pores in the system
+2.5d-1,#radius											radius of the non solid zone of the system where particles can flow
+.true.,#samemass										if true, all the particles have the same mass
+3.405d-1,#sigm											size parameter of the Lennard-Jones interaction
+6.312d0,#siz(1)											size in the x dimension of the simulation box (3.156d0 for a nice visualization in gnuplot)
+6.312d0,#siz(2)											size in the y dimension of the simulation box (3.156d0 for a nice visualization in gnuplot)
+6.312d0,#siz(3)											size in the z dimension of the simulation box (3.156d0 for a nice visualization in gnuplot)
+fcc,#struc												this character variable will tell the program which structure should be generated, fcc for cubic face centered, scc for simple cubic and por for porous matrix
+9.75d2,#temp											initial temperature of the system
+1.d2,#tempbath											temperature of the heat bath
+1.d3,#tmeas												when time is greater or equal than this, measurements will start
+1.d-1,#trelax											relaxation time for the andersen and berendsen thermostats
+1.d-1,#tstep											timestep of the simulation
+1.d4,#tmax												time when the simulation should stop

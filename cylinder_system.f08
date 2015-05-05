@@ -2,7 +2,7 @@ module common_stuff!common variables
 	implicit none!all variables must be declared
 	integer(8),parameter::maxbinrad=10000!maximum number of radial bins
 	integer(8),parameter::maxbinhist=100!maximum number of bins for the velocity histogram
-	integer(8),parameter::maxcyl=10!maximum number of cylinders
+	integer(8),parameter::maxcyl=100!maximum number of cylinders
 	integer(8),parameter::maxpartic=16000!maximum number of particles in the system
 	integer(8),parameter::maxcells=20!maximum number of cells per dimension
 	real(8),parameter::kboltz=1.38d-8!Boltzmann's constant
@@ -10,19 +10,18 @@ module common_stuff!common variables
 	logical::andersen=.false.!if true the andersen thermostat will be active
 	logical::berendsen=.false.!if true the berendsen thermostat will be active
 	logical::cylinders=.false.!if true, independent measurements will be taken in the different cylindrical intervals of the system
-	logical::fcc=.false.!if true a face centered cubic structure will be generated
 	logical::firststep=.true.!after the first call to this subroutine is completed, this will be false
 	logical::fixed(maxpartic)=.false.!this is true for fixed particles and false for free ones that can move
 	logical::gaussdistribution=.true.!if false, a uniform distribution for the velocities will be used instead of a gaussian one
 	logical::gnuplot=.false.!if true, the program will output data to be visualized in gnuplot
 	logical::measuring=.true.!if true, measurements will be taken
 	logical::samemass=.false.!if true, all the particles have the same mass
-	logical::simpcub=.false.!if true, a simple cubic structure will be generated
+	character(3)::struc='---'!this character variable will tell the program which structure should be generated, fcc for cubic face centered, scc for simple cubic and por for porous matrix
 	integer(8)::amntfix=0!amount of fixed particles in the simulation
 	integer(8)::amntfree=0!amount of free particles in the simulation
 	integer(8)::amnttot=0!amount of total particles in the simulation
 	integer(8)::binhist=0!number of bins for the velocity histograms
-	integer(8)::binrad=0!number of bins for the velocity histograms
+	integer(8)::binrad=0!number of bins for the radial distribution
 	integer(8)::distbins(maxbinrad)=0!these bins will count how many particles are in the divisions of the (0,L/2] interval in which the radial distribution will be measured
 	integer(8)::cells(maxpartic,maxcells,maxcells,maxcells)=0!lists containing the tags of the particles in each cell, the first index are the particles, the second one's the x axis, the third one's y and the last one's z
 	integer(8)::cvcount=0!this counter will keep track of how many measurements are used to calculate the heat capacity so the time average can be computed
@@ -36,6 +35,7 @@ module common_stuff!common variables
 	integer(8)::numcells(3)=0!number of cells for each dimension (x=1, y=2, z=3)
 	integer(8)::occup(maxcells,maxcells,maxcells)=0!number of particles in each cell, occupancy lists
 	integer(8)::presscount=0!this counter keeps track of how many timesteps are used to obtain the pressure
+	integer(8)::pores=0!amount of pores in the system
 	integer(8)::radcount=0!this counts how many timesteps are used in the measurement of the radial distribution
 	real(8)::cellsize(3)=0.d0!size of the cells for each dimension (x=1, y=2, z=3)
 	real(8)::cv=0.d0!heat capacity of the system
@@ -47,7 +47,7 @@ module common_stuff!common variables
 	real(8)::epot=0.d0!potential energy of the system
 	real(8)::epsi=0.d0!depth parameter of the Lennard-Jones interaction
 	real(8)::fvec(3,maxpartic)=0.d0!forces for each particle (fx->(1,:), fy->(2,:), fz->(3,:)) are here
-	real(8)::intrad=0.d0!interaction radius
+	real(8)::intrad=0.d0!interaction radius, cut-off for the potential, beyond this distance there is no interaction
 	real(8)::l2=0.d0!this is the L/2 factor of the interval for the distance bins
 	real(8)::latcon=0.d0!lattice constant
 	real(8)::mass=0.d0!generic mass of the particles
@@ -74,7 +74,7 @@ module common_stuff!common variables
 	real(8)::tempmin=0.d0!minimum temperature during equilibrium after termalization
 	real(8)::tempcy(maxcyl)=0.d0!temperature of each cylinder in the system
 	real(8)::threshold=0.d0!this variable is used to test if a particle will be affected by the andersen thermostat
-	real(8)::tmeas=0.d0!when time is greater or equal than this measurements will start
+	real(8)::tmeas=0.d0!when time is greater or equal than this, measurements will start
 	real(8)::trelax=0.d0!relaxation time for the andersen and berendsen thermostats
 	real(8)::tstep=0.d0!timestep of the simulation
 	real(8)::tmax=0.d0!time when the simulation should stop
@@ -87,6 +87,8 @@ end module common_stuff
 program MD_3D_cylinders!main program
 	use common_stuff!sharing the common variables
 	implicit none!all variables must be declared
+	real(8)::test=0.d0!test
+	common /a/test
 	call input()!reading initial parameters
 	call startup()!setting up the system
 	if(.not.gnuplot)write(*,*) 'Simulation started at: ',ctime(time8())!showing work in progress
@@ -168,10 +170,9 @@ subroutine input()!reading initial parameters
 	read(10,*) andersen!if true the andersen thermostat will be active
 	read(10,*) berendsen!if true the berendsen thermostat will be active
 	read(10,*) binhist!number of bins for the velocity histograms
-	read(10,*) binrad!number of bins for the velocity histograms
+	read(10,*) binrad!number of bins for the radial distribution
 	read(10,*) cylinders!if true, independent measurements will be taken in the different cylindrical intervals of the system
 	read(10,*) epsi!depth parameter of the Lennard-Jones interaction
-	read(10,*) fcc!if true a face centered cubic structure will be generated
 	read(10,*) gaussdistribution!if false, a uniform distribution for the velocities will be used instead of a gaussian one
 	read(10,*) gnuplot!if true, the program will output data to be visualized in gnuplot
 	read(10,*) intrad!interaction radius
@@ -180,17 +181,17 @@ subroutine input()!reading initial parameters
 	read(10,*) meascylin!this is the number of cylindrical intervals in which there will be independent measurements of variables
 	read(10,*) measintv!interval of time between measurements
 	read(10,*) measuring!if true, measurements will be taken
-	read(10,*) potentialshift!shift of the interaction potential
+ 	read(10,*) pores!amount of pores in the system
 	read(10,*) radius!radius of the non solid zone of the system where particles can flow
 	read(10,*) samemass!if true, all the particles have the same mass
 	read(10,*) sigm!size parameter of the Lennard-Jones interaction
-	read(10,*) simpcub!if true, a simple cubic structure will be generated
-	read(10,*) siz(1)!dimensions (x=1, y=2, z=3) of the simulation box
-	read(10,*) siz(2)!dimensions (x=1, y=2, z=3) of the simulation box
-	read(10,*) siz(3)!dimensions (x=1, y=2, z=3) of the simulation box
+	read(10,*) siz(1)!size in the x dimension of the simulation box
+	read(10,*) siz(2)!size in the y dimension of the simulation box
+	read(10,*) siz(3)!size in the z dimension of the simulation box
+	read(10,*) struc!this character variable will tell the program which structure should be generated, fcc for cubic face centered, scc for simple cubic and por for porous matrix
 	read(10,*) temp!temperature of the system
 	read(10,*) tempbath!temperature of the heat bath
-	read(10,*) tmeas!when time is greater or equal than this measurements will start
+	read(10,*) tmeas!when time is greater or equal than this, measurements will start
 	read(10,*) trelax!relaxation time for the andersen and berendsen thermostats
 	read(10,*) tstep!timestep of the simulation
 	read(10,*) tmax!time when the simulation should stop
@@ -236,14 +237,14 @@ subroutine startup()!the system to be simulated is set up here
 		write(*,*) "splot '-' w p pt 7 lc 0"!new gnuplot frame
 	end if
 	call calculate_some_constants()!getting some values for some variables
-	if(simpcub.and.fcc)then
-		stop 'Attempted to generate more than one structure, aborting.'!the program needs just one of these two varaibles to be true, it won't work properly with both at the same time
-	else if(fcc)then
+	if(struc=='fcc')then
 		call create_fcc_structure()!face centered cubic structure
-	else if(simpcub)then
+	else if(struc=='por')then
+		call create_porous_structure()!porous structure
+	else if(struc=='scc')then
 		call create_sc_structure()!simple cubic structure
 	else
-		stop 'No crystalline structure defined, aborting.'!the program won't work without a defined structure
+		stop 'No defined structure, aborting.'!the program needs to know which system should be generated
 	end if
 	if(gnuplot)write(*,*) 'e'!end of gnuplot frame
 	call velocity_histogram()!getting a first snapshot of the velocity distribution
@@ -255,13 +256,12 @@ subroutine startup()!the system to be simulated is set up here
 contains
 	subroutine calculate_some_constants()!just making the startup subroutine cleaner
 		implicit none!all variables must be declared
+		l2=dmin1(siz(1),siz(2),siz(3))*5.d-1!the value of L/2 is chosen to be half of the smallest side of the simulation box
 		measiter=nint(measintv/tstep,8)!number of iterations between measurements
 		maxiter=nint(tmax/tstep,8)!number of iterations between measurements
-		radius=2.5d-1*dmin1(siz(1),siz(2))!radius based on the size of the system
-		!radius=2.d1*2.d0**(1.d0/6.d0)*sigm!radius based on 20 equilibrium distances
-		volum=siz(1)*siz(2)*siz(3)!volume of the system
+		potentialshift=4.d0*epsi*(intrad**(-6)-1.d0)*intrad**(-6)!potential shift so that the potential energy is a continious function after the cut-off
 		threshold=tstep/trelax!this is the value that the threshold for the andersen thermostat should have
-		l2=dmin1(siz(1),siz(2),siz(3))*5.d-1!the value of L/2 is chosen to be half of the smallest side of the simulation box
+		volum=siz(1)*siz(2)*siz(3)!volume of the system
 		return
 	end subroutine calculate_some_constants
 	subroutine create_fcc_structure()!a face centered cubic structure will be generated here
@@ -318,51 +318,23 @@ contains
 				end do
 			end do
 		end do
-		amnttot=j-1!total amount of particles for the fcc structure
+		amnttot=j-1!total amount of particles
 		amntfree=amnttot!just in case, to avoid problems since there are no fixed particles in this situation
 		dens=amnttot/volum!this is the number density of all the particles
 		return
-	end subroutine
-	subroutine create_sc_structure()!a simple cubic structure will be generated here
-		implicit none!all variables must be declared
-		real(8)::dran_g!gaussian random number
-		!real(8)::dran_u!uniform random number
-		do i1=0,nint(siz(1)/latcon,8)-1
-			vecindx(1)=i1!index of the current cell in the first dimension
-			do i2=0,nint(siz(2)/latcon,8)-1
-				vecindx(2)=i2!index of the current cell in the second dimension
-				do i3=0,nint(siz(3)/latcon,8)-1
-					vecindx(3)=i3!index of the current cell in the third dimension
-					do k=1,3
-						rvec(k,j)=latcon*dble(vecindx(k))!position in the solid lattice of the material, free particles will leave these as they move
-					end do
-					if(dsqrt((rvec(1,j)-5.d-1*siz(1))**2+(rvec(2,j)-5.d-1*siz(1))**2)>=radius)then
-						fixed(j)=.true.!the particles outside of this cylinder are fixed
-						amntfix=amntfix+1!counting the number of fixed particles
-					else
-						do k=1,3
-							vvec(3,j)=dsqrt(kboltz*temp/mass)*dran_g()!free particles have a speed
-						end do
-						amntfree=amntfree+1!counting the number of free particles
-					end if
-					if(.not.samemass)then
-						mvec(j)=mass!setting the mass of the particles as a constant
-					else
-						mvec(j)=mass*dsin(dble(j))!setting the mass of the particles
-					end if
-					j=j+1!next particle
-					if(gnuplot)write(*,*) rvec(1,j),rvec(2,j),rvec(3,j)!data feed to gnuplot
-				end do
-			end do
-		end do
-		amnttot=j-1!total amount of particles for the sc structure
-		dens=amntfree/(siz(3)*pi*radius**2)!this is the number density of the free particles
-		return
-	end subroutine
-	subroutine create_porous_structure()!a structure composed of a fcc crystal with empty cylinders is generated here
+	end subroutine create_fcc_structure
+	subroutine create_porous_structure()!a structure composed of a fcc crystal with a matrix of empty cylinders is generated here
 		implicit none!all variables must be declared
 		real(8)::dran_g!gaussian random number
 		real(8)::dran_u!uniform random number
+		real(8)::porematrix(2,maxcyl)!the x (1,:) and y (2,:) coordinates of the centres of the pores will be kept here
+		real(8)::poreradius(maxcyl)!the radius of each pore
+		do k=1,pores
+			do l=1,2
+				porematrix(l,k)=dran_u()*siz(l)!random positions for the pores
+			end do
+			poreradius(k)=dran_u()+2.d0!random radius for the pores
+		end do
 		do i1=0,nint(siz(1)/latcon,8)-1
 			do i2=0,nint(siz(2)/latcon,8)-1
 				do i3=0,nint(siz(3)/latcon,8)-1
@@ -413,11 +385,56 @@ contains
 				end do
 			end do
 		end do
-		amnttot=j-1!total amount of particles for the fcc structure
+		amnttot=j-1!total amount of particles
 		amntfree=amnttot!just in case, to avoid problems since there are no fixed particles in this situation
+		!call porosity()!finding out how much free space is there in the system
 		dens=amnttot/volum!this is the number density of all the particles
 		return
-	end subroutine
+	end subroutine create_porous_structure
+	subroutine create_sc_structure()!a simple cubic structure will be generated here
+		implicit none!all variables must be declared
+		real(8)::dran_g!gaussian random number
+		real(8)::dran_u!uniform random number
+		do i1=0,nint(siz(1)/latcon,8)-1
+			vecindx(1)=i1!index of the current cell in the first dimension
+			do i2=0,nint(siz(2)/latcon,8)-1
+				vecindx(2)=i2!index of the current cell in the second dimension
+				do i3=0,nint(siz(3)/latcon,8)-1
+					vecindx(3)=i3!index of the current cell in the third dimension
+					do k=1,3
+						rvec(k,j)=latcon*dble(vecindx(k))!position in the solid lattice of the material, free particles will leave these as they move
+					end do
+					if(dsqrt((rvec(1,j)-5.d-1*siz(1))**2+(rvec(2,j)-5.d-1*siz(1))**2)>=radius)then
+						fixed(j)=.true.!the particles outside of this cylinder are fixed
+						amntfix=amntfix+1!counting the number of fixed particles
+					else
+						if(gaussdistribution)then
+							do k=1,3
+								vvec(3,j)=dsqrt(kboltz*temp/mass)*dran_g()!random gaussian components for the velocities of the free particles
+								rvecini(k,j)=rvec(k,j)!storing the initial position of the particles
+							end do
+						else
+							do k=1,3
+								vvec(3,j)=dsqrt(kboltz*temp/mass)*(dran_u()-5.d-1)!random gaussian components for the velocities of the free particles
+								rvecini(k,j)=rvec(k,j)!storing the initial position of the particles
+							end do
+						end if
+						amntfree=amntfree+1!counting the number of free particles
+					end if
+					if(.not.samemass)then
+						mvec(j)=mass!setting the mass of the particles as a constant
+					else
+						mvec(j)=mass*dsin(dble(j))!setting the mass of the particles
+					end if
+					j=j+1!next particle
+					if(gnuplot)write(*,*) rvec(1,j),rvec(2,j),rvec(3,j)!data feed to gnuplot
+				end do
+			end do
+		end do
+		amnttot=j-1!total amount of particles
+		dens=amntfree/(siz(3)*pi*radius**2)!this is the number density of the free particles
+		return
+	end subroutine create_sc_structure
 	subroutine remove_average_momentum()!to avoid the system having a drift, the average momentum must be substracted to all the particles in the system
 		implicit none!all variables must be declared
 		integer(8)::i=0!particle counter
@@ -716,7 +733,7 @@ contains
 		if(measure.and.cylinders)then
 			!#####HERE MAYBE THERE SHOULD BE A CONTRIBUTION TO THE POTENTIAL ENERGY FOR PARTICLES LOCATED EXCLUSIVELY IN EACH CYLINDER
 		else if(measure)then
-			epot=epot+4.d0*epsi*(sigm/dist)**6*((sigm/dist)**6-1.d0)+potentialshift!this is the potential energy
+			epot=epot+4.d0*epsi*(sigm/dist)**6*((sigm/dist)**6-1.d0)-potentialshift!this is the potential energy
 		end if
 		press=press+dist**2*force!to calculate the pressure, the sum over all interactions must be carried out
 		return
