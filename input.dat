@@ -1,28 +1,37 @@
-.false.,#andersen										if true the andersen thermostat will be active
-.false.,#berendsen										if true the berendsen thermostat will be active
-50,#binhist												number of bins for the velocity histograms
-1000,#binrad 											number of bins for the radial distribution
-.false.,#cylinders										if true, independent measurements will be taken in the different cylindrical intervals of the system
-1.654d-6,#epsi											depth parameter of the Lennard-Jones interaction
-.true.,#gaussdistribution								if false, a uniform distribution for the velocities will be used instead of a gaussian one
-.false.,#gnuplot										if true, the program will output data to be visualized in gnuplot
-1.0215d0,#intrad										interaction radius, cut-off for the potential, beyond this distance there is no interaction
-5.260d-1,#latcon										lattice constant
-6.6314d1,#mass											generic mass of the particles
-5,#meascylin											this is the number of cylindrical intervals in which there will be independent measurements of variables
-1.d2,#measintv											interval of time between measurements
-.true.,#measuring										if true, measurements will be taken
-20,#pores												amount of pores in the system
-2.5d-1,#radius											radius of the non solid zone of the system where particles can flow
-.true.,#samemass										if true, all the particles have the same mass
-3.405d-1,#sigm											size parameter of the Lennard-Jones interaction
-6.312d0,#siz(1)											size in the x dimension of the simulation box (3.156d0 for a nice visualization in gnuplot)
-6.312d0,#siz(2)											size in the y dimension of the simulation box (3.156d0 for a nice visualization in gnuplot)
-6.312d0,#siz(3)											size in the z dimension of the simulation box (3.156d0 for a nice visualization in gnuplot)
-fcc,#struc												this character variable will tell the program which structure should be generated, fcc for cubic face centered, scc for simple cubic and por for porous matrix
-9.75d2,#temp											initial temperature of the system
-1.d2,#tempbath											temperature of the heat bath
-1.d3,#tmeas												when time is greater or equal than this, measurements will start
-1.d-1,#trelax											relaxation time for the andersen and berendsen thermostats
-1.d-1,#tstep											timestep of the simulation
-1.d4,#tmax												time when the simulation should stop
+.false.,#andersen					if true the andersen thermostat will be active
+.false.,#berendsen					if true the berendsen thermostat will be active
+50,#binhist							number of bins for the velocity histograms
+1000,#binrad 						number of bins for the radial distribution
+.false.,#cylinders					if true, independent measurements will be taken in the different cylindrical intervals of the system
+1.654d-6,#epsi						depth parameter of the Lennard-Jones interaction
+.false.,#gaussdistribution			if false, a uniform distribution for the velocities will be used instead of a gaussian one
+.false.,#gnuplot					if true, the program will output data to be visualized in gnuplot
+.false.,#halfdensity				if true, the fluid in the porous system will have half of its particles erased to achieve a half of the previous density
+1.0215d0,#intrad					interaction radius, cut-off for the potential, beyond this distance there is no interaction
+5.260d-1,#latcon					lattice constant
+6.6314d1,#mass						generic mass of the particles
+50,#meascylin						this is the number of cylindrical intervals in which there will be independent measurements of variables
+1.d2,#measintv						interval of time between measurements
+.true.,#measuring					if true, measurements will be taken
+.true.,#measureraddist				if true, the radial distribution function will be measured
+.true.,#measurevhist				if true, a histogram of the components of the velocities of the particles will be taken each time a measurement is performed
+.true.,#noinitialinterac			if false, the initial interactions between all the particles won't be computed
+.false.,#periodicspeed				if true, no matter how fast the particles move, the periodic boundary conditions will apply, but this might make some bugs much harder to detect (and uses a tiny bit more resources)
+20,#pores							amount of pores in the system
+2.5d-1,#radius						radius of the non solid zone of the system where particles can flow
+.true.,#removedrift					if true, the average momentum of the system will be eliminated so there is no global drift
+.true.,#samemass					if true, all the particles have the same mass
+.false.,#saving						if true, the state of the system will be saved
+.true.,#separateoutput				if true, separate files with the current date and time will be used for the output of the measurements
+3.405d-1,#sigm						size parameter of the Lennard-Jones interaction
+6.312d0,#siz(1)						size in the x dimension of the simulation box (3.156d0 for a nice visualization in gnuplot)
+6.312d0,#siz(2)						size in the y dimension of the simulation box (3.156d0 for a nice visualization in gnuplot)
+6.312d0,#siz(3)						size in the z dimension of the simulation box (3.156d0 for a nice visualization in gnuplot)
+fcc,#struc							this variable will tell the program which structure should be generated, fcc for cubic face centered, fcy is the same but has a cylinder of free particles and scc for simple cubic and por for a porous matrix
+1.d0,#temp							initial temperature of the system
+9.5d2,#tempbath						temperature of the heat bath
+5.d3,#timetosave					the state of the system will be saved after this point in time
+1.d4,#tmax							time when the simulation should stop
+1.d0,#tmeas							when time is greater or equal than this, measurements will start
+1.d0,#trelax						relaxation time for the andersen and berendsen thermostats
+2.5d-1,#tstep						timestep of the simulation

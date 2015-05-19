@@ -1,0 +1,4 @@
+ set key top right
+ set grid
+ set boxwidth 1 relative
+ set style fill transparent solid 0.5 noborder
