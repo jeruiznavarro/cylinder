@@ -1,27 +1,59 @@
+-----NEW-----
+
 #####PHYSICAL QUESTIONS#####
 
-when the liquid particles go from +z to -z they may get out of the cylinder, be careful with this
-when measuring and calculating stuff that depends on N is this variable only the free particles or all of them? it's probably just the free ones
-which temperature should be used to calculate Cv? the temporal average of all the simulation as well?
-when calculating the pressure and the potential energy by cylinders, should it be counted according to the cylinder in which the particle receiving the interaction (n1) is located at? or should it be only when the interacting couple is in the cylinder?
-is the potential energy between two fixed particles relevant?
-should the pressure be measured over a certain amount of steps so we can average over them? is the interval between the rest of measurements a good candidate for that amount of steps?
-is the density of the free particles the only interesting one?
+!else if(inindex==numcells(dimen)+1)then
 
 #####COMPUTATIONAL QUESTIONS#####
 
-is using a module for storing common stuff slower than using common blocks (because it may be an object)?
-are internal subroutines better than external ones?
-how to get ifort?
+investigate the use of a linked list for the cell lists
 
 #####THINGS TO DO#####
 
+#####ALL INPUTS MUST BE MODIFIED TO HAVE ALL THREE COMPONENTS OF THE EXTERNAL FORCE#####
+
+update the input files because there are more variables now (and the measuring variable is gone)
+create a logical checker subroutine with a checking tree to avoid conflicts between the logical variables
+the external force is wrong, it should be applied only once when the forces are set to zero and it should be a vector instead of a constant added to the third component all the time
+presscount should divide all of press and not only the last summand
+press3d should automatically set temp3d as true to simplify things
+when loading a saved state there should be a test to check if the file is actually a proper save file or something else
+
+it seems that when the kinetic energy was divided by 2 it was not multiplied by the mass in normal_measuring(), same in measuring_with_cylinders(), possibly due to the fact that mass has always been normalized to 1.d0
+the if cycle to switch on timetomeasure has been moved from the line below the xyz test to the line above the first half_leap call in the main loop of the program, this should be correct but maybe it causes problems later so keep this in mind if there's something wrong with the taking of measurements
+the else if(fixed(i))then exit in the loop to check if atoms belong to the pores was removed because it's not really needed, but maybe it can cause problems in the future
+wtf is this? "if(saving.and.(dabs(time-timetosave)<=tstep*1.d-1))" why does it have arbitrary 0.1?
+kboltz was commented in the variable list, this should be safe but maybe it was commented to avoid something doing weird things (or just because it creates a warning during compile time because it's an unused variable, just like version)
+
+#####THINGS TO MEASURE#####
+
+
+
+-----OLD-----
+
+#####PHYSICAL QUESTIONS#####
+
+is the potential energy between two fixed particles relevant?
+
+#####THINGS TO DO#####
+
+FIND THE LIQUID TEMPERATURE RANGE
+fix periodicspeed
+there seems to be a hard to find bug that creates huge values in the first bin of the radial distribution when they should be zero or almost zero, so the program is forced to show that value, but this needs to be fixed
 don't forget to finish implementing something to read masses from a file in case they are different or just generating them according to where they are in the lattice
 !#####HERE MAYBE THERE SHOULD BE A CONTRIBUTION TO THE POTENTIAL ENERGY FOR PARTICLES LOCATED EXCLUSIVELY IN EACH CYLINDER
 !#####BE CAREFUL, IF THE SIMULATION BOX IS NOT COMPLETELY ON THE NON NEGATIVE PARTS OF THE AXES SEGMENTATION FAULTS MAY APPEAR WHEN CREATING THE CELL LISTS
 
+#####THINGS TO MEASURE#####
+
+g(r) for some temperatures in both liquid and solid (done)
+D(t) for some temperatures in liquid (extract the data)
+P(T) (done)
+T(t) comparing with the first value at t=0, measuring the variations for some system sizes (done)
+E(t) for some timesteps (done)
 
 
-change kboltz, epsi, fvec becomes avec, intrad, latcon, mass, measintv, radius, sigm, siz, temp, tempbath, time, tmax, tmeas, trelax, tstep, all functions, calculate_some_constants(), create_porous_structure(), half_leap(), interacting(), normal_measuring()? are you sure?, measuring_with_cylinders()? are you sure?
 
-the pressures still need the forces after you get avec
+-----VERSION HISTORY-----
+
+Before 0.7.4.00001 the list of inputs was: andersen,berendsen,binhist,binrad,convfactorenergy,convfactorlength,convfactormass,convfactorpressure,convfactortemperature,convfactortime,cylinders,element,epsi,extforce,gaussdistribution,gnuplot,halfdensity,intrad,latcon,mass,meascylin,measintv,measuring,measurediffusion,measureprofile,measureraddist,measurevhist,noinitialinterac,normaloutput,nosehoover,nosehooverconstant,outforce(1),outforce(2),outforce(3),periodicspeed,pores,press3d,progress,radius,removedrift,samemass,saving,separateoutput,sigm,siz(1),siz(2),siz(3),struc,temp,tempbath,temp3d,timetosave,tmax,tmeas,trelax,tstep,xyz

@@ -2,36 +2,56 @@
 .false.,#berendsen					if true the berendsen thermostat will be active
 50,#binhist							number of bins for the velocity histograms
 1000,#binrad 						number of bins for the radial distribution
+1.653d-21,#convfactorenergy			conversion factor from energy simulation units to SI units
+3.405d-10,#convfactorlength			conversion factor from length simulation units to SI units
+6.631d-26,#convfactormass			conversion factor from mass simulation units to SI units
+2.387d-8,#convfactorpressure		conversion factor from pressure simulation units to SI units
+1.197d2,#convfactortemperature		conversion factor from temeprature simulation units to SI units
+2.157d-12,#convfactortime			conversion factor from time simulation units to SI units
 .false.,#cylinders					if true, independent measurements will be taken in the different cylindrical intervals of the system
-1.654d-6,#epsi						depth parameter of the Lennard-Jones interaction
-.false.,#gaussdistribution			if false, a uniform distribution for the velocities will be used instead of a gaussian one
-.false.,#gnuplot					if true, the program will output data to be visualized in gnuplot
+Ar,#element							this is used for the VMD output, to tell the program which element the atoms belong to
+1.d0,#epsi							depth parameter of the Lennard-Jones interaction
+.false.,#extforce					if true, an external force will be applied to all free particles in the system
+.true.,#gaussdistribution			if false, a uniform distribution for the velocities will be used instead of a gaussian one
+.true.,#gnuplot 					if true, the program will output data to be visualized in gnuplot
 .false.,#halfdensity				if true, the fluid in the porous system will have half of its particles erased to achieve a half of the previous density
-1.0215d0,#intrad					interaction radius, cut-off for the potential, beyond this distance there is no interaction
-5.260d-1,#latcon					lattice constant
-6.6314d1,#mass						generic mass of the particles
+3.d0,#intrad						interaction radius, cut-off for the potential, beyond this distance there is no interaction
+1.680d0,#latcon						lattice constant
+1.d0,#mass							generic mass of the particles
 50,#meascylin						this is the number of cylindrical intervals in which there will be independent measurements of variables
-1.d2,#measintv						interval of time between measurements
-.true.,#measuring					if true, measurements will be taken
-.true.,#measureraddist				if true, the radial distribution function will be measured
-.true.,#measurevhist				if true, a histogram of the components of the velocities of the particles will be taken each time a measurement is performed
+4.636d-1,#measintv					interval of time between measurements
+.false.,#measuring					if true, measurements will be taken
+.false.,#measurediffusion			if true, measurements of the mean square displacement of the particles will be taken
+.false.,#measureprofile				if true, measurements of the velocity profile in a cylindrical area will be taken
+.false.,#measureraddist				if true, the radial distribution function will be measured
+.false.,#measurevhist				if true, a histogram of the components of the velocities of the particles will be taken each time a measurement is performed
 .true.,#noinitialinterac			if false, the initial interactions between all the particles won't be computed
+.false.,#normaloutput				if true, measurements of the different energies, temperature, pressure and mean square displacement will be taken
+.false.,#nosehoover					if true, the Nosé-Hoover thermostat will be used to sample the NVT ensenmble
+1.d1,#nosehooverconstant			coupling constant of the Nosé-Hoover thermostat
+0.d0,#outforce(1)					x component of the external force applied to all the particles in the system
+0.d0,#outforce(2)					y component of the external force applied to all the particles in the system
+0.d0,#outforce(3)					z component of the external force applied to all the particles in the system
 .false.,#periodicspeed				if true, no matter how fast the particles move, the periodic boundary conditions will apply, but this might make some bugs much harder to detect (and uses a tiny bit more resources)
 20,#pores							amount of pores in the system
-2.5d-1,#radius						radius of the non solid zone of the system where particles can flow
+.false.,#press3d					if true, a measurement of the pressure will be taken in each cell of the system, temp3d is needed to be true as well
+.false.,#progress					if true, the progress of the simulation will be printed out in the screen if the gnuplot output is not active
+5.364d0,#radius						radius of the non solid zone of the system where particles can flow
 .true.,#removedrift					if true, the average momentum of the system will be eliminated so there is no global drift
 .true.,#samemass					if true, all the particles have the same mass
 .false.,#saving						if true, the state of the system will be saved
-.true.,#separateoutput				if true, separate files with the current date and time will be used for the output of the measurements
-3.405d-1,#sigm						size parameter of the Lennard-Jones interaction
-6.312d0,#siz(1)						size in the x dimension of the simulation box (3.156d0 for a nice visualization in gnuplot)
-6.312d0,#siz(2)						size in the y dimension of the simulation box (3.156d0 for a nice visualization in gnuplot)
-6.312d0,#siz(3)						size in the z dimension of the simulation box (3.156d0 for a nice visualization in gnuplot)
-fcc,#struc							this variable will tell the program which structure should be generated, fcc for cubic face centered, fcy is the same but has a cylinder of free particles and scc for simple cubic and por for a porous matrix
-1.d0,#temp							initial temperature of the system
-9.5d2,#tempbath						temperature of the heat bath
-5.d3,#timetosave					the state of the system will be saved after this point in time
-1.d4,#tmax							time when the simulation should stop
-1.d0,#tmeas							when time is greater or equal than this, measurements will start
-1.d0,#trelax						relaxation time for the andersen and berendsen thermostats
-2.5d-1,#tstep						timestep of the simulation
+.false.,#separateoutput				if true, separate files with the current date and time will be used for the output of the measurements
+1.d0,#sigm							size parameter of the Lennard-Jones interaction
+1.344d1,#siz(1)						size in the x dimension of the simulation box (9.270d0 for a nice visualization in gnuplot)
+1.344d1,#siz(2)						size in the y dimension of the simulation box (9.270d0 for a nice visualization in gnuplot)
+1.344d1,#siz(3)						size in the z dimension of the simulation box (9.270d0 for a nice visualization in gnuplot)
+fcc,#struc							!this variable will tell the program which structure should be generated, fcc for cubic face centered, fcy is the same but has a cylinder of free particles, scc for simple cubic, por for a porous matrix and two for a system with just particles near the centre (useful for debugging)
+0.266d0,#temp						initial temperature of the system
+3.133d0,#tempbath					temperature of the heat bath
+.false.,#temp3d						if true, a measurement of the temperature will be taken in each cell of the system
+1.159d0,#timetosave					the state of the system will be saved after this point in time
+2.318d2,#tmax						time when the simulation should stop
+0.d0,#tmeas							when time is greater or equal than this, measurements will start
+4.636d-3,#trelax					relaxation time for the andersen and berendsen thermostats
+4.636d-4,#tstep						timestep of the simulation
+.false.,#xyz						if true, visualization data for VMD will be kept in a file
